@@ -38,7 +38,7 @@ table_of_const = {}
 
 state = init_state
 
-f = open('file.txt', 'r')
+f = open('file.tovid', 'r')
 source_code = f.read()
 f.close()
 
