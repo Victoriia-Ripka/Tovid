@@ -1,0 +1,40 @@
+package main
+import "math/rand"
+
+func sum(term, term) {
+     return term+term
+}
+
+func main() {
+	var int a
+	var float f
+	var boolean b
+	var complex c1 := 3+2i
+	var complex c2 := -1+3i
+	var complex c3
+	const int five := 5
+	const done := "Done!"
+	scanf(a)
+	f := (a^2) + 3/five
+	b := (a+a) < f
+	print(a, f, b)
+	for a := 0; a <= five; a++ {
+        	if a > b == 0 {
+            	print(b)
+        	}
+		else {
+      	 	print(a)
+}
+for k := five; k >= nil; k-- {
+if k != nil {
+	print("Not yet!")
+else {
+	print(done)
+}
+for 2 > 1 {
+			break
+		}
+c3 := sum(c1, c2)
+print(c3)
+print("\n" + done)
+}
