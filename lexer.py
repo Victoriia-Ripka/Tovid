@@ -124,9 +124,9 @@ def is_final(state):
 
 def next_state(state, class_ch):
     global char
-    # if state in (8, 10):
-    #     if class_ch == 'Letter' and char != 'i':
-    #         return stf[(state, 'other')]
+    if state in (8, 10):
+        if class_ch == 'Letter' and char != 'i':
+            return stf[(state, 'other')]
     try:
         return stf[(state, class_ch)]
     except KeyError:
