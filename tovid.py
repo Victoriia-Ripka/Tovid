@@ -232,7 +232,7 @@ def parse_token(lexeme, token, id) :
         # чи збiгаються лексема та токен таблицi розбору (lex, tok) з очiкуваними (lexeme,token)
         if (lex, tok) == (lexeme, token):
             # вивести у консоль номер рядка програми та лексему i токен
-            print(id +'parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
+            print('parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
             return True
         else:
             # згенерувати помилку та iнформацiю про те, що лексема та токен таблицi розбору
@@ -245,6 +245,7 @@ def parse_token(lexeme, token, id) :
 
 def parse_ident(lexem, token):
     global num_row_s
+    # потрібно тут щось зробити
     print("ident")
     num_row_s += 1
     return True
@@ -252,8 +253,9 @@ def parse_ident(lexem, token):
 
 def parse_declarlist () :
     global num_line_s
-    num_line_s += 1
-    print('\t parseStatementList():')
+    # потрібно пропустити якусь кількість ід, що належать declarlist (6-14)
+    num_row_s = 12
+    print('StatementList')
     return True
 
 
