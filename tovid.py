@@ -38,7 +38,7 @@ table_of_const = {}
 
 state = init_state
 
-f = open('file.tovid', 'r')
+f = open('a.tovid', 'r')
 source_code = f.read()
 f.close()
 
@@ -189,5 +189,75 @@ lex()
 
 print('-' * 30)
 print('table_of_symb:{0}'.format(table_of_symb))
-print('table_of_id:{0}'.format(table_of_id))
-print('table_of_const:{0}'.format(table_of_const))
+print('-' * 30)
+# print('table_of_id:{0}'.format(table_of_id))
+# print('table_of_const:{0}'.format(table_of_const))
+
+
+# -------------------------------------------------------
+num_row = 1
+len_tableOfSymb = len(table_of_symb)
+
+def parse_program () :
+    try:
+        # перевiрити наявнiсть ключового слова ’func’
+        parse_token("func", "keyword", "")
+        parse_token("(", "brack_op", "")
+        parse_token(")", "brack_op", "")
+        parse_token("{", "brack_op", "")
+        # перевiрити синтаксичну коректнiсть списку iнструкцiй StatementList
+        parse_declarlist()
+        parse_token("}", "brack_op", "")
+        print("Parser: Синтаксичний аналiз завершився успiшно")
+        return True
+    except SystemExit as e:
+        print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
+
+
+def parse_token(lexeme, token, id) :
+    # доступ до поточного рядка таблицi розбору
+    global num_row, num_line
+    # якщо всi записи таблицi розбору прочитанi,
+    # а парсер ще не знайшов якусь лексему
+    if num_row > len_tableOfSymb:
+        fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row))
+        # прочитати з таблицi розбору
+        # номер рядка програми, лексему та її токен
+        num_line, lex, tok = get_symb()
+        # тепер поточним буде наступний рядок таблицi розбору
+        num_row += 1
+        # чи збiгаються лексема та токен таблицi розбору (lex, tok)
+        # з очiкуваними (lexeme,token)
+        if (lex, tok) == (lexeme, token):
+            # вивести у консоль номер рядка програми та лексему i токен
+            print(id +'parseToken: В рядку {0} токен {1}'.format(num_line, (lexeme, token)))
+        return True
+    else:
+        # згенерувати помилку та iнформацiю про те, що
+        # лексема та токен таблицi розбору (lex,tok) вiдрiзняються вiд
+        # очiкуваних (lexeme,token)
+        fail_parse('невiдповiднiсть токенiв', (num_line, lex, tok, lexeme, token))
+        return False
+
+
+def parse_declarlist () :
+    print('\t parseStatementList():')
+    return True
+
+
+def get_symb () :
+    num_line, lexeme, token, _ = table_of_symb[numRow]
+    return num_line, lexeme, token
+
+def fail_parse(str,tuple):
+    if str == 'неочiкуваний кiнець програми':
+        (lexeme, token, num_row) = tuple
+        print('Parser ERROR: \n\t Неочiкуваний кiнець програми - в таблицi символiв (розбору) немає запису з номером {1}.\n\t Очiкувалось - {0}'.format((lexeme, token), num_row))
+        exit(1001)
+    elif str == 'невiдповiднiсть токенiв':
+        (num_line, lexeme, token, lex, tok) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
+        exit(1)
+
+
+parse_program()
