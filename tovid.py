@@ -205,15 +205,18 @@ num_line_s = 1
 len_table_of_symb = len(table_of_symb)
 
 
+# можливо відверта діч, але ніби має працювати, парсить все що дозволяємо парсити. Пуста програма допускається
 def parse_program () :
+    global num_row_s, num_line_s
     try:
-        parse_token("func", "keyword", "")
-        parse_ident("main", "ident")
-        parse_token("(", "brack_op", "")
-        parse_token(")", "brack_op", "")
-        parse_token("{", "brack_op", "")
-        parse_declarlist()
-        parse_token("}", "brack_op", "")
+        while num_row_s < len_table_of_symb:
+            num_line_s, lex, tok = get_symb(num_row_s)
+            if lex == 'var' or lex == 'const':
+                parse_declarlist()
+            elif tok == 'keyword' or tok == 'ident':
+                parse_identlist()
+            else:
+                parse_statementlist()
         print("Parser: Синтаксичний аналiз завершився успiшно")
         return True
     except SystemExit as e:
