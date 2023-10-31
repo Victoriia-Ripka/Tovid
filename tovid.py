@@ -1,4 +1,4 @@
-# Tovid language lexer
+# Tovid language lexer and syntaxer
 
 token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
                'return': 'keyword', 'if': 'keyword', 'else': 'keyword', 'for': 'keyword', 'range': 'keyword',
