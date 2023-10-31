@@ -204,7 +204,7 @@ len_tableOfSymb = len(table_of_symb)
 def parse_program () :
     try:
         parse_token("func", "keyword", "")
-        parse_ident("main", "ident", "1")
+        parse_ident("main", "1")
         parse_token("(", "brack_op", "")
         parse_token(")", "brack_op", "")
         parse_token("{", "brack_op", "")
@@ -219,33 +219,39 @@ def parse_program () :
 def parse_token(lexeme, token, id) :
     # доступ до поточного рядка таблицi розбору
     global num_row_s, num_line_s
-    # якщо всi записи таблицi розбору прочитанi,
-    # а парсер ще не знайшов якусь лексему
+    # якщо всi записи таблицi розбору прочитанi, а парсер ще не знайшов якусь лексему
     if num_row_s < len_tableOfSymb:
-        # прочитати з таблицi розбору
-        # номер рядка програми, лексему та її токен
+        # прочитати з таблицi розбору номер рядка програми, лексему та її токен
         num_line_s, lex, tok = get_symb(num_row_s)
         # тепер поточним буде наступний рядок таблицi розбору
         num_row_s += 1
-        # чи збiгаються лексема та токен таблицi розбору (lex, tok)
-        # з очiкуваними (lexeme,token)
+        # чи збiгаються лексема та токен таблицi розбору (lex, tok) з очiкуваними (lexeme,token)
         if (lex, tok) == (lexeme, token):
             # вивести у консоль номер рядка програми та лексему i токен
             print(id +'parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
             return True
         else:
-            # згенерувати помилку та iнформацiю про те, що
-            # лексема та токен таблицi розбору (lex,tok) вiдрiзняються вiд
-            # очiкуваних (lexeme,token)
+            # згенерувати помилку та iнформацiю про те, що лексема та токен таблицi розбору (lex,tok)
+            # вiдрiзняються вiд очiкуваних (lexeme,token)
             fail_parse('невiдповiднiсть токенiв', (num_line, lex, tok, lexeme, token))
             return False
     else:
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-def parse_ident(lexem, token, id):
-    return True
+def parse_ident(lexem, id):
+    global num_row_s
+    if table_of_id[lexem] == id:
+        num_row_s += 1
+        print("==")
+        return True
+    print("!=")
+    num_row_s += 1
+    return False
 
+
+# def get_ident(id):
+#     table_of_id[id]
 
 def parse_declarlist () :
     print('\t parseStatementList():')
