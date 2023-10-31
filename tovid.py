@@ -190,8 +190,10 @@ lex()
 print('-' * 30)
 print('table_of_symb:{0}'.format(table_of_symb))
 print('-' * 30)
-# print('table_of_id:{0}'.format(table_of_id))
+print('table_of_id:{0}'.format(table_of_id))
+# print('-' * 30)
 # print('table_of_const:{0}'.format(table_of_const))
+print('-' * 30)
 
 
 # -------------------------------------------------------
@@ -202,9 +204,9 @@ len_tableOfSymb = len(table_of_symb)
 def parse_program () :
     try:
         parse_token("func", "keyword", "")
+        parse_ident("main", "ident", "1")
         parse_token("(", "brack_op", "")
         parse_token(")", "brack_op", "")
-        parse_ident("main", "ident", "1")
         parse_token("{", "brack_op", "")
         parse_declarlist()
         parse_token("}", "brack_op", "")
@@ -239,6 +241,10 @@ def parse_token(lexeme, token, id) :
             return False
     else:
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
+
+
+def parse_ident(lexem, token, id):
+    return True
 
 
 def parse_declarlist () :
