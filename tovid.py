@@ -15,7 +15,7 @@ token_state_table = {2: 'ident', 4: 'int', 7: 'float', 11: 'complex', 19: 'strin
 stf = {(0, 'Letter'): 1, (1, 'Letter'): 1, (1, 'Digit'): 1, (1, 'other'): 2,
        (0, 'Digit'): 3, (3, 'Digit'): 3, (3, 'other'): 4, (3, 'dot'): 5, (3, '+'): 8, (5, 'Digit'): 6,
        (5, 'other'): 103, (6, 'Digit'): 6, (6, 'other'): 7, (6, '+'): 8, (8, 'Digit'): 8, (8, 'dot'): 9,
-       (8, 'Letter'): 21, (8, 'other'): 101, (9, 'Digit'): 10, (9, 'other'): 103, (10, 'Digit'): 10, (10, 'Letter'): 21,
+       (8, 'i'): 21, (8, 'other'): 101, (9, 'Digit'): 10, (9, 'other'): 103, (10, 'Digit'): 10, (10, 'i'): 21,
        (10, 'other'): 101, (21, 'other'): 11,
        (0, ':'): 12, (12, '='): 13, (12, 'other'): 102,
        (0, 'other'): 101,
@@ -38,7 +38,7 @@ table_of_const = {}
 
 state = init_state
 
-f = open('a.tovid', 'r')
+f = open('file.tovid', 'r')
 source_code = f.read()
 f.close()
 
@@ -125,8 +125,11 @@ def is_final(state):
 def next_state(state, class_ch):
     global char
     if state in (8, 10):
-        if class_ch == 'Letter' and char != 'i':
-            return stf[(state, 'other')]
+        if class_ch == 'Letter':
+            if char == 'i':
+                return stf[(state, char)]
+            else:
+                return stf[(state, 'other')]
     try:
         return stf[(state, class_ch)]
     except KeyError:
@@ -199,7 +202,8 @@ print('-' * 30)
 # -------------------------------------------------------
 num_row_s = 1
 num_line_s = 1
-len_tableOfSymb = len(table_of_symb)
+len_table_of_symb = len(table_of_symb)
+
 
 def parse_program () :
     try:
@@ -221,7 +225,7 @@ def parse_token(lexeme, token, id) :
     global num_row_s, num_line_s
     # якщо всi записи таблицi розбору прочитанi,
     # а парсер ще не знайшов якусь лексему
-    if num_row_s < len_tableOfSymb:
+    if num_row_s < len_table_of_symb:
         # прочитати з таблицi розбору
         # номер рядка програми, лексему та її токен
         num_line_s, lex, tok = get_symb(num_row_s)

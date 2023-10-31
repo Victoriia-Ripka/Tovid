@@ -12,7 +12,7 @@ func main() {
 	var complex c1 := 3+2i
 	var complex c2 := -1+3i
 	var complex c3
-	const int five := 5
+	const int five := 5.5
 	const done := "Done!"
 	scanf(a)
 	f := (a^2) + 3/five
@@ -43,5 +43,5 @@ func main() {
 
     c3 := sum(c1, c2)
     print(c3)
-    print("\n" + done)
+    printt("\n" + done)
 }
