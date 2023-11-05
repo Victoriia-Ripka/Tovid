@@ -194,8 +194,8 @@ print('-' * 30)
 print('table_of_symb:{0}'.format(table_of_symb))
 print('-' * 30)
 print('table_of_id:{0}'.format(table_of_id))
-# print('-' * 30)
-# print('table_of_const:{0}'.format(table_of_const))
+print('-' * 30)
+print('table_of_const:{0}'.format(table_of_const))
 print('-' * 30)
 
 
@@ -211,12 +211,19 @@ def parse_program () :
     try:
         while num_row_s < len_table_of_symb:
             num_line_s, lex, tok = get_symb(num_row_s)
-            if lex == 'var' or lex == 'const':
-                parse_declarlist()
-            elif tok == 'keyword' or tok == 'ident':
-                parse_identlist()
+            if tok == 'ident':
+                if lex == 'var' or lex == 'const':
+                    num_row_s += 1
+                    parse_declarlist()
+                parse_token(lex, tok, num_row_s)
+            elif tok == 'keyword':
+                parse_token(lex, tok, num_row_s)
             else:
-                parse_statementlist()
+                print('declar part')
+                parse_token(lex, tok, num_row_s)
+                num_row_s += 1
+                # воно зациклюється в нескінченність
+                # parse_statementlist(num_row_s)
         print("Parser: Синтаксичний аналiз завершився успiшно")
         return True
     except SystemExit as e:
@@ -246,17 +253,17 @@ def parse_token(lexeme, token, id) :
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-def parse_ident(lexem, token):
+def parse_identlist(lexem, token):
     global num_row_s
     # потрібно тут щось зробити
-    print("ident")
+    print("keyword", lexem)
     num_row_s += 1
     return True
 
 
-def parse_declarlist () :
-    global num_line_s
+def parse_statementlist (num_row_s) :
     # потрібно пропустити якусь кількість ід, що належать declarlist (6-14)
+
     num_row_s = 12
     print('StatementList')
     return True
