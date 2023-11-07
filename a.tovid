@@ -1,4 +1,4 @@
-package return
+package main
 import v1
 
 func main() {

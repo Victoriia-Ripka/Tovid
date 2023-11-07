@@ -215,6 +215,8 @@ def parse_program () :
                 parse_func(lex, tok)
             elif lex == 'import':
                 parse_import(lex, tok)
+            elif lex == '//':
+                parse_comment(lex, tok)
             elif lex == 'package':
                 parse_package(lex, tok)
             elif lex == 'if':
@@ -225,12 +227,12 @@ def parse_program () :
             elif lex == 'for':
                 parse_cicle(lex, tok)
             #не розумію цього відгалудження
-            elif tok == 'ident':
-                if lex == 'var' or lex == 'const':
-                    parse_declarlist()
-                parse_token(lex, tok, num_row_s)
-            else:
-                print(num_row_s)
+            # elif tok == 'ident':
+                # if lex == 'var' or lex == 'const':
+                    # parse_declarlist()
+                # parse_token(lex, tok, num_row_s)
+            # else:
+                # print(num_row_s)
                 # parse_program()
             #elif tok == 'keyword':
                 #parse_token(lex, tok, num_row_s)
@@ -241,6 +243,7 @@ def parse_program () :
         return True
     except SystemExit as e:
         print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
+
 
 # якщо програма починається з функції (чи коли в програмі зустрічається лексема func) вона повинна відповідно парситися
 # розпізнаватися ідентифікатор функції, '(' та ')', початок '{' та кінець '}' тіла функції
@@ -261,6 +264,7 @@ def parse_func(lex, tok):
     print("parse func is finished")
 
 
+#done (to my mind)
 def parse_token(lexeme, token, id) :
     global num_row_s, num_line_s
     if num_row_s <= len_table_of_symb:
@@ -276,14 +280,18 @@ def parse_token(lexeme, token, id) :
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-def parse_identlist(lexem, token):
+#done (to my mind)
+def parse_identlist(lexeme, token):
     global num_row_s
-    # потрібно тут щось зробити
-    print("keyword", lexem)
-    num_row_s += 1
-    return True
+    if(lexeme in table_of_id.keys()):
+        num_row_s += 1
+        print('ident ', lexeme)
+    else:
+        num_line_s, lex, tok = get_symb(num_row_s)
+        fail_parse('невiдповiднiсть токенiв', (num_line, lex, tok, lexeme, token))
 
 
+# to do
 def parse_statementlist (num_row_s) :
     # потрібно пропустити якусь кількість ід, що належать declarlist
     # num_row_s = 12
@@ -292,12 +300,14 @@ def parse_statementlist (num_row_s) :
     parse_program()
 
 
+#to do
 def parse_comment ():
     global num_row_s
     num_row_s += 2
     print('comments')
 
 
+#done
 def parse_package(lex, tok):
     global num_row_s, num_line_s
     print("parse package is started")
@@ -308,6 +318,7 @@ def parse_package(lex, tok):
     print("parse package is finished")
 
 
+#fix
 def parse_import(lex, tok):
     global num_row_s, num_line_s
     print("parse import is started")
@@ -318,10 +329,12 @@ def parse_import(lex, tok):
     print("parse import is finished")
 
 
+#to do
 def parse_branching(lex, tok):
     print('if')
 
 
+#to do
 def parse_cicle(lex, tok):
     print('cycle')
 
