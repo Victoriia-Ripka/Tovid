@@ -214,9 +214,9 @@ def parse_program () :
             if lex == 'func':
                 parse_func(lex, tok)
             elif lex == 'import':
-                parse_import(lex, tok, num_row_s)
+                parse_import(lex, tok)
             elif lex == 'package':
-                parse_package(lex, tok, num_row_s)
+                parse_package(lex, tok)
             elif lex == 'if':
                 parse_branching(lex, tok)
                 #num_line_s, lex, tok = get_symb(num_row_s)
@@ -244,6 +244,7 @@ def parse_program () :
 
 # якщо програма починається з функції (чи коли в програмі зустрічається лексема func) вона повинна відповідно парситися
 # розпізнаватися ідентифікатор функції, '(' та ')', початок '{' та кінець '}' тіла функції
+# як розпізнавати тіло функції?!
 def parse_func(lex, tok):
     global num_row_s, num_line_s
     print("parse func is started")
@@ -297,12 +298,33 @@ def parse_comment ():
     print('comments')
 
 
+def parse_package(lex, tok):
+    global num_row_s, num_line_s
+    print("parse package is started")
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    # тут потрібно парсити тільки ідентифікатор (not keyword!)
+    parse_identlist(lex, tok)
+    print("parse package is finished")
+
+
+def parse_import(lex, tok):
+    global num_row_s, num_line_s
+    print("parse import is started")
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    # тут потрібно парсити тільки рядок (not keyword or ident!)
+    parse_token(lex, tok, num_line_s)
+    print("parse import is finished")
+
+
 def parse_branching(lex, tok):
     print('if')
 
 
 def parse_cicle(lex, tok):
     print('cycle')
+
 
 def get_symb (num_row) :
     num_line, lexeme, token, _ = table_of_symb[num_row]
