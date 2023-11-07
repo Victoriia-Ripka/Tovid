@@ -205,7 +205,7 @@ num_line_s = 1
 len_table_of_symb = len(table_of_symb)
 
 
-# можливо відверта діч, але ніби має працювати, парсить все що дозволяємо парсити. Пуста програма допускається
+# доповнювати
 def parse_program () :
     global num_row_s, num_line_s
     try:
@@ -250,21 +250,37 @@ def parse_program () :
 # як розпізнавати тіло функції?!
 def parse_func(lex, tok):
     global num_row_s, num_line_s
-    print("parse func is started")
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    parse_identlist(lex, tok)
+    if (lex in table_of_id.keys()):
+        num_row_s += 1
+    else:
+        num_line_s, lex1, tok1 = get_symb(num_row_s)
+        fail_parse('очікувався ідентифікатор', (num_line_s, lex1, tok1))
     num_line_s, lex, tok = get_symb(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
+    # потрібно тут парсити параметри функції і перевіряти, щоб їх розділяла кома
+    while(lex != ')'):
+        if(lex in table_of_id.keys() or lex == ','):
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+            num_line_s1, lex1, tok1 = get_symb(num_row_s+1)
+            if(lex == ',' and lex1 in table_of_id.keys()):
+                continue
+            else:
+                print(lex, ' line 272')
+                fail_parse('fhfth', (num_line_s, lex, tok))
+        else:
+            fail_parse('очікувався параметр', (num_line_s, lex, tok))
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
-    #parse body of function
+    # parse body of function
+    print("parse function body")
     parse_token('}', tok, num_row_s)
-    print("parse func is finished")
 
 
-#done (to my mind)
+#done
 def parse_token(lexeme, token, id) :
     global num_row_s, num_line_s
     if num_row_s <= len_table_of_symb:
@@ -274,24 +290,24 @@ def parse_token(lexeme, token, id) :
             print('parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
             return True
         else:
-            fail_parse('невiдповiднiсть токенiв', (num_line, lex, tok, lexeme, token))
+            fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok, lexeme, token))
             return False
     else:
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-#done (to my mind)
+#навіщо це треба
 def parse_identlist(lexeme, token):
     global num_row_s
-    if(lexeme in table_of_id.keys()):
-        num_row_s += 1
-        print('ident ', lexeme)
-    else:
-        num_line_s, lex, tok = get_symb(num_row_s)
-        fail_parse('невiдповiднiсть токенiв', (num_line, lex, tok, lexeme, token))
+    # if(lexeme in table_of_id.keys()):
+    #     num_row_s += 1
+    #     print('ident ', lexeme)
+    # else:
+    #     num_line_s, lex, tok = get_symb(num_row_s)
+    #     fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
 
 
-# to do
+# навіщо це треба
 def parse_statementlist (num_row_s) :
     # потрібно пропустити якусь кількість ід, що належать declarlist
     # num_row_s = 12
@@ -310,23 +326,24 @@ def parse_comment ():
 #done
 def parse_package(lex, tok):
     global num_row_s, num_line_s
-    print("parse package is started")
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    # тут потрібно парсити тільки ідентифікатор (not keyword!)
-    parse_identlist(lex, tok)
-    print("parse package is finished")
+    if (lex in table_of_id.keys()):
+        num_row_s += 1
+    else:
+        num_line_s, lex1, tok1 = get_symb(num_row_s)
+        fail_parse('очікувався ідентифікатор', (num_line_s, lex1, tok1))
 
 
-#fix
+#done
 def parse_import(lex, tok):
     global num_row_s, num_line_s
-    print("parse import is started")
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    # тут потрібно парсити тільки рядок (not keyword or ident!)
-    parse_token(lex, tok, num_line_s)
-    print("parse import is finished")
+    if(tok == 'string'):
+        parse_token(lex, tok, num_line_s)
+    else:
+        fail_parse('очікувався рядок', (num_line_s, lex, tok))
 
 
 #to do
@@ -353,6 +370,27 @@ def fail_parse(str,tuple):
         (num_line, lexeme, token, lex, tok) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
         exit(1)
+    elif str == 'очікувався ідентифікатор':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор'.format(
+            num_line, lexeme, token))
+        exit(2)
+    elif str == 'очікувався рядок':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався рядок'.format(
+            num_line, lexeme, token))
+        exit(3)
+    elif str == 'очікувався параметр':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
+            num_line, lexeme, token))
+        exit(4)
+    elif str == '':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
+            num_line, lexeme, token))
+        exit(5)
+
 
 
 parse_program()
