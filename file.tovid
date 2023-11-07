@@ -4,7 +4,7 @@ import "math/rand"
 func sum(term, term) {
      return term+term
 }
-
+// some
 func main() {
 	var int a
 	var float f
