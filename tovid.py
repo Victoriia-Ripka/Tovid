@@ -7,7 +7,8 @@ token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var':
                ':=': 'assign_op', '.': 'punc', ',': 'punc', ':': 'punc', ';': 'punc',
                ' ': 'ws', '\t': 'ws', '\n': 'cr', '\r': 'cr', '\n\r': 'cr', '\r\n': 'cr',
                '-': 'add_op', '+': 'add_op', '*': 'mult_op', '/': 'mult_op', '^': 'pow_op',
-               '(': 'brack_op', ')': 'brack_op', '{': 'brack_op', '}': 'brack_op'
+               '(': 'brack_op', ')': 'brack_op', '{': 'brack_op', '}': 'brack_op',
+               '//': 'comment', '/*': 'comment', '*/': 'comment'
                }
 token_state_table = {2: 'ident', 4: 'int', 7: 'float', 11: 'complex', 19: 'string', 16: 'rel_op', 17: 'rel_op'}
 
@@ -24,8 +25,10 @@ stf = {(0, 'Letter'): 1, (1, 'Letter'): 1, (1, 'Digit'): 1, (1, 'other'): 2,
        (0, '='): 15, (0, '!'): 15, (15, '='): 16, (15, 'other'): 101,
        (0, '<'): 22, (0, '>'): 22, (22, '='): 16, (22, 'other'): 17,
        (0, '"'): 18, (18, 'other'): 18, (18, '"'): 19,
-       (0, '{'): 20, (0, '}'): 20, (0, '^'): 20, (0, '/'): 20, (0, '*'): 20, (0, '-'): 20, (0, '+'): 20,
-       (0, '('): 20, (0, ')'): 20, (0, ','): 20, (0, ';'): 20
+       (0, '{'): 20, (0, '}'): 20, (0, '^'): 20, (0, '-'): 20, (0, '+'): 20,
+       (0, '('): 20, (0, ')'): 20, (0, ','): 20, (0, ';'): 20,
+       (0, '/'): 22, (0, '*'): 23, (22, 'other'): 20, (23, 'other'): 20,
+       (22, '/'): 24, (22, '*'): 24, (23, '/'): 24
        }
 init_state = 0
 F = {2, 4, 7, 11, 13, 14, 16, 17, 19, 20, 101, 102, 103}
@@ -314,6 +317,19 @@ def parse_identlist(lexeme, token):
     #     fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
 
 
+def parse_comment(lexeme, token):
+    global num_line_s, num_row_s
+    if lexeme == "//":
+        current_line = num_line_s
+        while num_line_s == current_line:
+            num_row_s += 1
+    else:  # elif lexeme == "/*"
+        while lexeme != '*/':
+            num_row_s += 1
+            num_line_s, lexeme, tok = get_symb(num_row_s)
+
+
+# done
 # навіщо це треба
 def parse_statementlist (num_row_s) :
     # потрібно пропустити якусь кількість ід, що належать declarlist
@@ -321,13 +337,6 @@ def parse_statementlist (num_row_s) :
     # print('StatementList')
     # return True
     parse_program()
-
-
-#to do
-def parse_comment ():
-    global num_row_s
-    num_row_s += 2
-    print('comments')
 
 
 #done
