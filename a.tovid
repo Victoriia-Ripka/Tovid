@@ -3,8 +3,8 @@ package rain
 import "Math/rand"
 
 func sum("a", "a", b, 15.5) {
-
-
+    var float a := 15
+    return a
 }
 
 
