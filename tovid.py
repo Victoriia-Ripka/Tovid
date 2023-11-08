@@ -326,7 +326,7 @@ def parse_statementlist () :
         elif lex == 'for':
             parse_cicle(lex, tok)
         elif lex == 'return':
-            print('return')
+            parse_return()
         elif lex =='var' or lex == 'const':
             parse_declarlist()
         elif tok == 'ident':
@@ -334,16 +334,13 @@ def parse_statementlist () :
         else:
             print(lex, tok, 'p')
             fail_parse("", (num_line_s, lex, tok))
-            # elif tok == 'ident':
-            # if lex == 'var' or lex == 'const':
-            # parse_token(lex, tok, num_row_s)
-            # elif tok == 'keyword':
+        # elif tok == 'keyword':
             # parse_token(lex, tok, num_row_s)
 
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nill', 'boolean']
 
-#to do
+#fix
 def parse_declarlist():
     global num_row_s
     num_row_s += 1
@@ -367,6 +364,19 @@ def parse_declarlist():
     else:
         print(lex, tok, 'p')
         fail_parse("", (num_line_s, lex, tok))
+
+# повертати все, що тільки можна. перевіряти, щобб це був останній рядок у вкладеності
+# fix
+
+def parse_return():
+    global num_row_s, num_line_s
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    if lex in table_of_id.keys():
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+    else:
+        fail_parse("return", (num_line_s, tok, lex))
 
 
 #to do
@@ -444,6 +454,10 @@ def fail_parse(str,tuple):
         (num_line) = tuple
         print('Parser ERROR: \n\t В рядку {0} очікується var/const'.format(num_line))
         exit(5)
+    elif str == 'return':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} очікується нормальне повернення return'.format(num_line, lexeme, token))
+        exit(6)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('error'.format(num_line, lexeme, token))
