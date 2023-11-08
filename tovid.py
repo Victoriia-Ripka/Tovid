@@ -245,6 +245,9 @@ def parse_program () :
         print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
 
 
+params_types = { 'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword',
+                 'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
+
 # якщо програма починається з функції (чи коли в програмі зустрічається лексема func) вона повинна відповідно парситися
 # розпізнаватися ідентифікатор функції, '(' та ')', початок '{' та кінець '}' тіла функції
 # як розпізнавати тіло функції?!
@@ -261,18 +264,22 @@ def parse_func(lex, tok):
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
     # потрібно тут парсити параметри функції і перевіряти, щоб їх розділяла кома
-    while(lex != ')'):
-        if(lex in table_of_id.keys() or lex == ','):
-            num_row_s += 1
-            num_line_s, lex, tok = get_symb(num_row_s)
-            num_line_s1, lex1, tok1 = get_symb(num_row_s+1)
-            if(lex == ',' and lex1 in table_of_id.keys()):
-                continue
+    if(lex != ')'):
+        num_line_s, lex, tok = get_symb(num_row_s)
+        num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
+        while(lex != ')'):
+            if(lex in table_of_id.keys() or tok in params_types.keys()):
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
             else:
-                print(lex, ' line 272')
-                fail_parse('fhfth', (num_line_s, lex, tok))
-        else:
-            fail_parse('очікувався параметр', (num_line_s, lex, tok))
+                fail_parse('очікувався параметр', (num_line_s, lex, tok))
+            if(lex == ','):
+                num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
+                if (lex1 in table_of_id.keys() or tok1 in params_types.keys()):
+                    num_row_s += 1
+                    num_line_s, lex, tok = get_symb(num_row_s)
+                else:
+                    fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
     # parse body of function

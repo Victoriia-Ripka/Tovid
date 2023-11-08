@@ -2,7 +2,8 @@ package My
 package rain
 import "Math/rand"
 
-func sum(term, ) {
+func sum("a", "a", b, 15.5) {
+
 
 }
 
