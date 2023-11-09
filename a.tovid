@@ -2,9 +2,9 @@ package My
 package rain
 import "Math/rand"
 
-func sum("a", "a", b, 15.5) {
+func sum(a) {
     var float a := 15
-    return a
+    return false
 }
 
 

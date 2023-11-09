@@ -215,13 +215,13 @@ def parse_program () :
         while num_row_s < len_table_of_symb:
             num_line_s, lex, tok = get_symb(num_row_s)
             if lex == 'func':
-                parse_func(lex, tok)
+                parse_func()
             elif lex == 'import':
-                parse_import(lex, tok)
+                parse_import()
             elif lex == '//' or lex == '/*':
-                parse_comment(lex, tok)
+                parse_comment()
             elif lex == 'package':
-                parse_package(lex, tok)
+                parse_package()
             elif lex == 'if':
                 parse_branching(lex, tok)
                 #num_line_s, lex, tok = get_symb(num_row_s)
@@ -229,10 +229,10 @@ def parse_program () :
                 #  print('else')
             elif lex == 'for':
                 parse_cicle(lex, tok)
-            #не розумію цього відгалудження
-            # elif tok == 'ident':
             elif lex == 'var' or lex == 'const':
                     parse_declarlist()
+            elif lex in table_of_id.keys():
+                fail_parse("змінна без const/var", (num_line_s, lex, tok))
                 # parse_token(lex, tok, num_row_s)
             # else:
                 # print(num_row_s)
@@ -252,15 +252,11 @@ params_types = { 'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float':
                  'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
 
 # done
-def parse_func(lex, tok):
+def parse_func():
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if (lex in table_of_id.keys()):
-        num_row_s += 1
-    else:
-        num_line_s, lex1, tok1 = get_symb(num_row_s)
-        fail_parse('очікувався ідентифікатор', (num_line_s, lex1, tok1))
+    parse_identlist(lex)
     num_line_s, lex, tok = get_symb(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
@@ -287,7 +283,7 @@ def parse_func(lex, tok):
     parse_token('}', tok, num_row_s)
 
 
-#done
+# done
 def parse_token(lexeme, token, id) :
     global num_row_s, num_line_s
     if num_row_s <= len_table_of_symb:
@@ -303,18 +299,19 @@ def parse_token(lexeme, token, id) :
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-#навіщо це треба
-def parse_identlist(lexeme, token):
+# done
+def parse_identlist(lexeme):
     global num_row_s
-    # if(lexeme in table_of_id.keys()):
-    #     num_row_s += 1
-    #     print('ident ', lexeme)
-    # else:
-    #     num_line_s, lex, tok = get_symb(num_row_s)
-    #     fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
+    if(lexeme in table_of_id.keys()):
+        num_row_s += 1
+        print('ident ', lexeme)
+    else:
+        num_line_s, lex, tok = get_symb(num_row_s)
+        fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
 
 
-def parse_comment(lexeme, token):
+# done?
+def parse_comment(lexeme):
     global num_line_s, num_row_s
     if lexeme == "//":
         current_line = num_line_s
@@ -334,28 +331,26 @@ def parse_statementlist () :
     print(num_row_s, len_table_of_symb)
     while num_row_s < len_table_of_symb:
         num_line_s, lex, tok = get_symb(num_row_s)
-        if lex == '//':
-            parse_comment(lex, tok)
+        if lex == '//' or lex == '/*':
+                parse_comment(lex, tok)
         elif lex == 'if':
             parse_branching(lex, tok)
         elif lex == 'for':
             parse_cicle(lex, tok)
-        elif lex == 'return':
-            parse_return()
         elif lex =='var' or lex == 'const':
             parse_declarlist()
         elif tok == 'ident':
             fail_parse("змінна без const/var", num_line_s)
-        else:
-            print(lex, tok, 'p')
-            fail_parse("", (num_line_s, lex, tok))
-        # elif tok == 'keyword':
-            # parse_token(lex, tok, num_row_s)
+        elif lex == 'return':
+            parse_return()
+        # else:
+        #     print(lex, tok, 'p')
+        #     fail_parse("", (num_line_s, lex, tok))
 
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nill', 'boolean']
 
-#fix
+# fix
 def parse_declarlist():
     global num_row_s
     num_row_s += 1
@@ -380,33 +375,29 @@ def parse_declarlist():
         print(lex, tok, 'p')
         fail_parse("", (num_line_s, lex, tok))
 
-# повертати все, що тільки можна. перевіряти, щобб це був останній рядок у вкладеності
-# fix
+
+# done
 def parse_return():
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if lex in table_of_id.keys():
+    if lex in table_of_id.keys() or tok in allowed_data_types or lex == 'iota' or lex == 'nill' or lex == 'true' or lex == 'false':
         num_row_s += 1
         num_line_s, lex, tok = get_symb(num_row_s)
     else:
         fail_parse("return", (num_line_s, tok, lex))
 
 
-#done
-def parse_package(lex, tok):
+# done
+def parse_package():
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if lex in table_of_id.keys():
-        num_row_s += 1
-    else:
-        num_line_s, lex1, tok1 = get_symb(num_row_s)
-        fail_parse('очікувався ідентифікатор', (num_line_s, lex1, tok1))
+    parse_identlist(lex)
 
 
-#done
-def parse_import(lex, tok):
+# done
+def parse_import():
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
