@@ -2,9 +2,17 @@ package My
 package rain
 import "Math/rand"
 
+var int a
+var float f
+var boolean b
+var complex c1 := 3+2i
+var complex c2 := -1+3i
+var complex c3
+const int five := 5.5
+const done := "Done!"
+
 func sum(a) {
     var float a := 15
-    return false
+    return a
 }
-
 
