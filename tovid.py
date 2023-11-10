@@ -7,6 +7,8 @@ token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var':
                ':=': 'assign_op', '.': 'punc', ',': 'punc', ':': 'punc', ';': 'punc',
                ' ': 'ws', '\t': 'ws', '\n': 'cr', '\r': 'cr', '\n\r': 'cr', '\r\n': 'cr',
                '-': 'add_op', '+': 'add_op', '*': 'mult_op', '/': 'mult_op', '^': 'pow_op',
+               '==': 'rel_op', '>': 'rel_op', '>=': 'rel_op', '<': 'rel_op', '<=': 'rel_op', '!=': 'rel_op',
+               '==': 'rel_op', '> ': 'rel_op', '>= ': 'rel_op', '< ': 'rel_op', '<= ': 'rel_op', '!= ': 'rel_op',
                '(': 'brack_op', ')': 'brack_op', '{': 'brack_op', '}': 'brack_op',
                '//': 'comment', '/*': 'comment', '*/': 'comment'
                }
@@ -223,9 +225,9 @@ def parse_program () :
             elif lex == 'package':
                 parse_package()
             elif lex == 'if':
-                parse_branching(lex, tok)
+                parse_if()
             elif lex == 'for':
-                parse_cicle(lex, tok)
+                parse_for()
             elif lex == 'scanf' or lex == 'print':
                 parse_scan_print(lex, tok)
             elif lex == 'var' or lex == 'const':
@@ -322,11 +324,11 @@ def parse_statementlist () :
     while num_row_s < len_table_of_symb:
         num_line_s, lex, tok = get_symb(num_row_s)
         if lex == '//' or lex == '/*':
-                parse_comment(lex, tok)
+            parse_comment(lex, tok)
         elif lex == 'if':
-            parse_branching(lex, tok)
+            parse_if()
         elif lex == 'for':
-            parse_cicle(lex, tok)
+            parse_for()
         elif lex =='var' or lex == 'const':
             parse_declarlist()
         elif tok == 'ident':
@@ -441,17 +443,50 @@ def parse_import():
         fail_parse('очікувався рядок', (num_line_s, lex, tok))
 
 
-# to do
-def parse_branching(lex, tok):
-    print('if')
-    #num_line_s, lex, tok = get_symb(num_row_s)
-                #if lex == 'else':
-                #  print('else')
+def parse_boolExpr():
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_symb(num_row_s)
+    print(lex, tok, 'line 350')
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    if tok in 'rel_op':
+        print(lex, tok, 'line 400')
+        num_row_s += 1
+    else:
+        fail_parse('очікувався rel_op', (num_line_s, lex, tok))
+    num_line_s, lex, tok = get_symb(num_row_s)
+    print(lex, tok, 'line 350')
+    num_row_s += 1
 
 
-# to do
-def parse_cicle(lex, tok):
-    print('cycle')
+def parse_if():
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_symb(num_row_s)
+    if lex == 'if' and tok == 'keyword':
+        num_row_s += 1
+        parse_boolExpr();
+        parse_token('{', 'brack_op','')
+        parse_statementlist()# выдает ошибку, над print доделать и после протестить код дальше
+        num_line_s, lex, tok = get_symb(num_row_s)
+        parse_token('}','brack_op','')
+        parse_token('else', 'keyword')
+        parse_token('{', 'brack_op','')
+        parse_statementlist()
+        parse_token('}', 'brack_op','')
+    else:
+        fail_parse('очікувався if', (num_line_s, lex, tok))
+
+def parse_for():
+    global num_row_s, num_line_s
+    parse_declarlist()
+    parse_token(';', 'punc', '')
+    parse_boolExpr()
+    parse_token(';', 'punc', '')
+    #надо сделать инкремент, пока его скипаю
+    num_row_s += 3
+    parse_token('{', 'brack_op', '')
+    parse_statementlist()
+    parse_token('}', 'brack_op', '')
 
 
 # done
