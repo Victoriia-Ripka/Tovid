@@ -43,5 +43,5 @@ func main() {
 
     c3 := sum(c1, c2)
     print(c3)
-    printt("\n" + done)
+    print("\n" + done)
 }
