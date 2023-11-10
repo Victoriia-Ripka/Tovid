@@ -221,7 +221,7 @@ def parse_program () :
                 parse_func(lex, tok)
             elif lex == 'import':
                 parse_import(lex, tok)
-            elif lex == '//':
+            elif lex == '//' or lex == '/*':
                 parse_comment(lex, tok)
             elif lex == 'package':
                 parse_package(lex, tok)
@@ -234,8 +234,8 @@ def parse_program () :
                 parse_cicle(lex, tok)
             #не розумію цього відгалудження
             # elif tok == 'ident':
-                # if lex == 'var' or lex == 'const':
-                    # parse_declarlist()
+            elif lex == 'var' or lex == 'const':
+                    parse_declarlist()
                 # parse_token(lex, tok, num_row_s)
             # else:
                 # print(num_row_s)
@@ -254,9 +254,7 @@ def parse_program () :
 params_types = { 'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword',
                  'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
 
-# якщо програма починається з функції (чи коли в програмі зустрічається лексема func) вона повинна відповідно парситися
-# розпізнаватися ідентифікатор функції, '(' та ')', початок '{' та кінець '}' тіла функції
-# як розпізнавати тіло функції?!
+# done
 def parse_func(lex, tok):
     global num_row_s, num_line_s
     num_row_s += 1
@@ -288,8 +286,7 @@ def parse_func(lex, tok):
                     fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
-    # parse body of function
-    print("parse function body")
+    parse_statementlist()
     parse_token('}', tok, num_row_s)
 
 
@@ -331,15 +328,72 @@ def parse_comment(lexeme, token):
             num_row_s += 1
             num_line_s, lexeme, tok = get_symb(num_row_s)
 
+            
+# to do
+def parse_statementlist () :
+    global num_row_s, num_line_s
+    print(num_row_s)
+    print("parse function body")
+    print(num_row_s, len_table_of_symb)
+    while num_row_s < len_table_of_symb:
+        num_line_s, lex, tok = get_symb(num_row_s)
+        if lex == '//':
+            parse_comment(lex, tok)
+        elif lex == 'if':
+            parse_branching(lex, tok)
+        elif lex == 'for':
+            parse_cicle(lex, tok)
+        elif lex == 'return':
+            parse_return()
+        elif lex =='var' or lex == 'const':
+            parse_declarlist()
+        elif tok == 'ident':
+            fail_parse("змінна без const/var", num_line_s)
+        else:
+            print(lex, tok, 'p')
+            fail_parse("", (num_line_s, lex, tok))
+        # elif tok == 'keyword':
+            # parse_token(lex, tok, num_row_s)
 
-# done
-# навіщо це треба
-def parse_statementlist (num_row_s) :
-    # потрібно пропустити якусь кількість ід, що належать declarlist
-    # num_row_s = 12
-    # print('StatementList')
-    # return True
-    parse_program()
+
+allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nill', 'boolean']
+
+#fix
+def parse_declarlist():
+    global num_row_s
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    if lex in allowed_data_types:
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+    if lex in table_of_id.keys():
+        print(lex, tok)
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+        if tok == 'assign_op':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+            if tok in params_types.keys():
+                print(lex, tok)
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
+    elif tok == 'ident':
+        fail_parse("змінна без const/var", num_line_s)
+    else:
+        print(lex, tok, 'p')
+        fail_parse("", (num_line_s, lex, tok))
+
+# повертати все, що тільки можна. перевіряти, щобб це був останній рядок у вкладеності
+# fix
+def parse_return():
+    global num_row_s, num_line_s
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    if lex in table_of_id.keys():
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+    else:
+        fail_parse("return", (num_line_s, tok, lex))
 
 
 #done
@@ -347,7 +401,7 @@ def parse_package(lex, tok):
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if (lex in table_of_id.keys()):
+    if lex in table_of_id.keys():
         num_row_s += 1
     else:
         num_line_s, lex1, tok1 = get_symb(num_row_s)
@@ -359,7 +413,7 @@ def parse_import(lex, tok):
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if(tok == 'string'):
+    if tok == 'string':
         parse_token(lex, tok, num_line_s)
     else:
         fail_parse('очікувався рядок', (num_line_s, lex, tok))
@@ -375,11 +429,13 @@ def parse_cicle(lex, tok):
     print('cycle')
 
 
+#done
 def get_symb (num_row) :
     num_line, lexeme, token, _ = table_of_symb[num_row]
     return num_line, lexeme, token
 
 
+#можна доповнювати
 def fail_parse(str,tuple):
     if str == 'неочiкуваний кiнець програми':
         (lexeme, token, num_row) = tuple
@@ -404,11 +460,18 @@ def fail_parse(str,tuple):
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
             num_line, lexeme, token))
         exit(4)
+    elif str == 'змінна без const/var':
+        (num_line) = tuple
+        print('Parser ERROR: \n\t В рядку {0} очікується var/const'.format(num_line))
+        exit(5)
+    elif str == 'return':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} очікується нормальне повернення return'.format(num_line, lexeme, token))
+        exit(6)
     elif str == '':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
-            num_line, lexeme, token))
-        exit(5)
+        print('error'.format(num_line, lexeme, token))
+        exit(6)
 
 
 
