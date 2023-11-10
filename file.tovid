@@ -9,7 +9,7 @@ func main() {
 	var int a
 	var float f
 	var boolean b
-	var complex c1 := 3+2i
+	var complex c1 := 2i
 	var complex c2 := -1+3i
 	var complex c3
 	const int five := 5.5
@@ -43,5 +43,5 @@ func main() {
 
     c3 := sum(c1, c2)
     print(c3)
-    printt("\n" + done)
+    print("\n" + done)
 }
