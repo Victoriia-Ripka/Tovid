@@ -11,8 +11,16 @@ var complex c3
 const int five := 5.5
 const done := "Done!"
 
+for a := 0; a <= five; a++ {
+    if a + b == 10 - b {
+        print(b)
+    }
+    else {
+        print(a)
+    }
+}
+
 func sum(a) {
     var float a := 15
     return a
 }
-

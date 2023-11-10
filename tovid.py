@@ -321,8 +321,8 @@ def parse_statementlist () :
     print(num_row_s)
     print("parse function body")
     print(num_row_s, len_table_of_symb)
-    while num_row_s < len_table_of_symb:
-        num_line_s, lex, tok = get_symb(num_row_s)
+    num_line_s, lex, tok = get_symb(num_row_s)
+    while (lex != '}'):
         if lex == '//' or lex == '/*':
             parse_comment(lex, tok)
         elif lex == 'if':
@@ -331,12 +331,13 @@ def parse_statementlist () :
             parse_for()
         elif lex =='var' or lex == 'const':
             parse_declarlist()
-        elif tok == 'ident':
-            fail_parse("змінна без const/var", num_line_s)
         elif lex == 'scanf' or lex == 'print':
             parse_scan_print(lex, tok)
         elif lex == 'return':
             parse_return()
+        elif tok == 'ident':
+            fail_parse("змінна без const/var", num_line_s)
+        num_line_s, lex, tok = get_symb(num_row_s)
 
 
 # DEBUG and fix
@@ -446,17 +447,21 @@ def parse_import():
 def parse_boolExpr():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_symb(num_row_s)
-    print(lex, tok, 'line 350')
-    num_row_s += 1
-    num_line_s, lex, tok = get_symb(num_row_s)
+    while(tok != 'rel_op'):
+        print(lex, tok, 'line 350')
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
     if tok in 'rel_op':
         print(lex, tok, 'line 400')
         num_row_s += 1
     else:
         fail_parse('очікувався rel_op', (num_line_s, lex, tok))
     num_line_s, lex, tok = get_symb(num_row_s)
-    print(lex, tok, 'line 350')
-    num_row_s += 1
+    while(tok != 'brack_op' and tok != 'punc'):
+        print(lex, tok, 'line 350')
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+
 
 
 def parse_if():
@@ -469,7 +474,7 @@ def parse_if():
         parse_statementlist()# выдает ошибку, над print доделать и после протестить код дальше
         num_line_s, lex, tok = get_symb(num_row_s)
         parse_token('}','brack_op','')
-        parse_token('else', 'keyword')
+        parse_token('else', 'keyword','')
         parse_token('{', 'brack_op','')
         parse_statementlist()
         parse_token('}', 'brack_op','')
