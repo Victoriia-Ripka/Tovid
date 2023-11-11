@@ -19,6 +19,12 @@ for a := 0; a <= five; a++ {
         print(a)
     }
 }
+/* hello its a comment
+yes yesd
+yefff
+*/
+
+// hellooo
 
 func sum(a) {
     var float a := 15
