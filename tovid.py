@@ -442,7 +442,7 @@ def parse_declarpart():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_symb(num_row_s)
     declarpart_line = num_line_s
-    while num_line_s == declarpart_line and lex != ';':
+    while num_line_s == declarpart_line:
         print(num_line_s, lex, tok, num_row_s)
         if tok == 'add_op':
             num_row_s += 1
@@ -545,7 +545,7 @@ def parse_boolExpr():
         # print(lex, tok, 'line 400')
         num_row_s += 1
     else:
-        fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
+        fail_parse('очікувався rel_op', (num_line_s, lex, tok))
     num_line_s, lex, tok = get_symb(num_row_s)
     while(tok != 'brack_op' and tok != 'punc'):
         # print(lex, tok, 'line 350')
@@ -559,20 +559,17 @@ def parse_if():
     num_line_s, lex, tok = get_symb(num_row_s)
     if lex == 'if' and tok == 'keyword':
         num_row_s += 1
-        parse_boolExpr()
+        parse_boolExpr();
         parse_token('{', 'brack_op','')
-        num_line_s, lex, tok = get_symb(num_row_s)
-        parse_statementlist()
+        parse_statementlist()# выдает ошибку, над print доделать и после протестить код дальше
         num_line_s, lex, tok = get_symb(num_row_s)
         parse_token('}','brack_op','')
-        num_line_s, lex, tok = get_symb(num_row_s)
-        if lex == 'else' and tok == 'keyword':
-            parse_token('else', 'keyword','')
-            parse_token('{', 'brack_op','')
-            parse_statementlist()
-            parse_token('}', 'brack_op','')
+        parse_token('else', 'keyword','')
+        parse_token('{', 'brack_op','')
+        parse_statementlist()
+        parse_token('}', 'brack_op','')
     else:
-        fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
+        fail_parse('очікувався if', (num_line_s, lex, tok))
 
 
 # fix
@@ -582,8 +579,8 @@ def parse_for():
     parse_token(';', 'punc', '')
     parse_boolExpr()
     parse_token(';', 'punc', '')
+    #надо сделать инкремент, пока его скипаю
     num_row_s += 3
-    #parse_statementlist()
     parse_token('{', 'brack_op', '')
     parse_statementlist()
     parse_token('}', 'brack_op', '')
