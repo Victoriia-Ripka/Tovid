@@ -256,7 +256,6 @@ def parse_func():
     num_line_s, lex, tok = get_symb(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
-    # потрібно тут парсити параметри функції і перевіряти, щоб їх розділяла кома
     if(lex != ')'):
         num_line_s, lex, tok = get_symb(num_row_s)
         num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
@@ -327,13 +326,11 @@ def parse_comment(comment_line):
 # fix
 def parse_statementlist () :
     global num_row_s, num_line_s
-    print(num_row_s)
-    print("parse function body")
-    print(num_row_s, len_table_of_symb)
+    print("parse function body ", num_line_s)
     num_line_s, lex, tok = get_symb(num_row_s)
     while (lex != '}'):
         if lex == '//' or lex == '/*':
-            parse_comment()
+            parse_comment(num_line_s)
         elif lex == 'if':
             parse_if()
         elif lex == 'for':
@@ -346,6 +343,8 @@ def parse_statementlist () :
             parse_return()
         elif tok == 'ident':
             fail_parse("змінна без const/var", num_line_s)
+        else:
+            fail_parse('return', (num_line_s, lex, tok))
         num_line_s, lex, tok = get_symb(num_row_s)
 
 
@@ -396,31 +395,46 @@ def parse_declarlist():
     global num_row_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
+    print('declar list')
+    #
     if lex in allowed_data_types:
         num_row_s += 1
         num_line_s, lex, tok = get_symb(num_row_s)
+    elif lex in table_of_id.keys():
+        num_row_s = num_row_s
+    else:
+        fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
-        print(lex, tok, "line 350")
+        print(lex, tok, "line 407")
         num_row_s += 1
         num_line_s, lex, tok = get_symb(num_row_s)
+        print(lex, tok, "line 410")
         if tok == 'assign_op':
             num_row_s += 1
-            num_line_s, lex, tok = get_symb(num_row_s)
-            if tok == 'add_op':
-               num_row_s += 1 
-               num_line_s, lex, tok = get_symb(num_row_s)
-            if tok in params_types.keys():
-                print(lex, tok)
-                num_row_s += 1
-                num_line_s, lex, tok = get_symb(num_row_s)
-            elif lex == '(':
-                print('line 364')
-    elif tok == 'ident':
-        fail_parse("змінна без const/var", num_line_s)
+            parse_declarpart()
     else:
-        print(lex, tok, 'p')
-        fail_parse("", (num_line_s, lex, tok))
+        fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
 
+
+def parse_declarpart():
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_symb(num_row_s)
+    declarpart_line = num_line_s
+    while num_line_s == declarpart_line:
+        if tok == 'add_op':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+        if tok in params_types.keys():
+            print(lex, tok)
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+        if tok == 'string':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+        elif lex == '(':
+            print('line 364')
+        else:
+            fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
 
 # done
 def parse_return():
@@ -472,7 +486,6 @@ def parse_boolExpr():
         num_line_s, lex, tok = get_symb(num_row_s)
 
 
-
 def parse_if():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_symb(num_row_s)
@@ -489,6 +502,7 @@ def parse_if():
         parse_token('}', 'brack_op','')
     else:
         fail_parse('очікувався if', (num_line_s, lex, tok))
+
 
 def parse_for():
     global num_row_s, num_line_s
@@ -540,12 +554,24 @@ def fail_parse(str,tuple):
         exit(5)
     elif str == 'return':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} очікується нормальне повернення return'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} очікується нормальне повернення return'.format(num_line))
         exit(6)
+    elif str == 'не дозволений тип даних':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
+        exit(7)
+    elif str == 'присвоювання':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
+        exit(8)
     elif str == '':
         (num_line, lexeme, token) = tuple
-        print('error'.format(num_line, lexeme, token))
-        exit(6)
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
+        exit(9)
+    elif str == '':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
+        exit(10)
 
 
 parse_program()
