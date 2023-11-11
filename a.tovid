@@ -1,24 +1,35 @@
-package My
-package rain
-import "Math/rand"
+package main
+import "math/rand"
 
-var int a
-var float f
-var boolean b
-var complex c1 := 3+2i
-var complex c2 := -1+3i
-var complex c3
-const int five := 5.5
-const done := "Done!"
+func sum(term, term) {
+	const float a := term + term
+	return a
+}
+// some
+func main() {
+	var int a
+	var float f
+	var boolean b
+	var complex c1 := 2i
+	var complex c2 := -1+3i
+	var complex c3
+	const int five := 5.5
+	const done := "Done!"
+	scanf(a)
+	f := (a^2) + 3/five
+	b := (a+a) < f
+	print(a, f, b)
 
+    c3 := sum(c1, c2)
+    print(c3)
+    print("\n" + done)
+}
 
 /* hello its a comment
 yes yesd
 yefff
 */
-
 // hellooo
-
 func sum(a) {
     var float a := 15
     return a
