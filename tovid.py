@@ -44,7 +44,7 @@ table_of_const = {}
 
 state = init_state
 
-f = open('file.tovid', 'r')
+f = open('a.tovid', 'r')
 source_code = f.read()
 f.close()
 
@@ -225,7 +225,7 @@ def parse_program () :
             elif lex == 'import':
                 parse_import()
             elif lex == '//' or lex == '/*':
-                parse_comment()
+                parse_comment(num_line_s)
             elif lex == 'package':
                 parse_package()
             elif lex == 'if':
@@ -307,16 +307,21 @@ def parse_identlist(lexeme):
 
 
 # done?
-def parse_comment(lexeme):
-    global num_line_s, num_row_s
-    if lexeme == "//":
-        current_line = num_line_s
-        while num_line_s == current_line:
+def parse_comment(comment_line):
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_symb(num_row_s)
+    print(lex)
+    print(table_of_symb)
+    if lex == '//':
+        while num_line_s == comment_line:
             num_row_s += 1
-    else:  # elif lexeme == "/*"
-        while lexeme != '*/':
+            num_line_s, lex, tok = get_symb(num_row_s)
+        num_row_s -= 1
+    elif lex == '/*':
+        while lex != '*/':
             num_row_s += 1
-            num_line_s, lexeme, tok = get_symb(num_row_s)
+            num_line_s, lex, tok = get_symb(num_row_s)
+    num_row_s += 1
 
             
 # fix
@@ -328,7 +333,7 @@ def parse_statementlist () :
     num_line_s, lex, tok = get_symb(num_row_s)
     while (lex != '}'):
         if lex == '//' or lex == '/*':
-            parse_comment(lex, tok)
+            parse_comment()
         elif lex == 'if':
             parse_if()
         elif lex == 'for':
@@ -422,7 +427,7 @@ def parse_return():
     global num_row_s, num_line_s
     num_row_s += 1
     num_line_s, lex, tok = get_symb(num_row_s)
-    if lex in table_of_id.keys() or tok in allowed_data_types or lex == 'iota' or lex == 'nill' or lex == 'true' or lex == 'false':
+    if lex in table_of_id.keys() or tok in allowed_data_types or lex == 'iota' or lex == 'nil' or lex == 'true' or lex == 'false':
         num_row_s += 1
         num_line_s, lex, tok = get_symb(num_row_s)
     else:
