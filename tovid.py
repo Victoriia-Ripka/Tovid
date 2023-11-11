@@ -213,6 +213,12 @@ num_row_s = 1
 num_line_s = 1
 len_table_of_symb = len(table_of_symb)
 
+params_types = { 'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword',
+                 'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
+
+allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nill', 'boolean']
+
+declared_ident = []
 
 # доповнювати
 def parse_program () :
@@ -246,9 +252,6 @@ def parse_program () :
         print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
 
 
-params_types = { 'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword',
-                 'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
-
 # done
 def parse_func():
     global num_row_s, num_line_s
@@ -258,26 +261,34 @@ def parse_func():
     num_line_s, lex, tok = get_symb(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
-    if(lex != ')'):
-        num_line_s, lex, tok = get_symb(num_row_s)
-        num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
-        while(lex != ')'):
-            if(lex in table_of_id.keys() or tok in params_types.keys()):
-                num_row_s += 1
-                num_line_s, lex, tok = get_symb(num_row_s)
-            else:
-                fail_parse('очікувався параметр', (num_line_s, lex, tok))
-            if(lex == ','):
-                num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
-                if (lex1 in table_of_id.keys() or tok1 in params_types.keys()):
-                    num_row_s += 1
-                    num_line_s, lex, tok = get_symb(num_row_s)
-                else:
-                    fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
+    parse_params(lex, tok)
+    num_line_s, lex, tok = get_symb(num_row_s)
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
     parse_statementlist()
     parse_token('}', tok, num_row_s)
+
+
+# done
+def parse_params(lexeme, token):
+    global num_row_s, num_line_s
+    if lexeme != ')':
+        num_line_s, lex, tok = get_symb(num_row_s)
+        num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
+        while lex != ')':
+            if lex in table_of_id.keys() or tok in params_types.keys() :
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
+            else:
+                fail_parse('очікувався параметр', (num_line_s, lex, tok))
+            if lex == ',':
+                num_line_s1, lex1, tok1 = get_symb(num_row_s + 1)
+                if lex1 in table_of_id.keys() or tok1 in params_types.keys():
+                    num_row_s += 1
+                    num_line_s, lex, tok = get_symb(num_row_s)
+                else:
+                    fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
+    num_line_s += 1
 
 
 # done
@@ -299,7 +310,7 @@ def parse_token(lexeme, token, id) :
 # done
 def parse_identlist(lexeme):
     global num_row_s
-    if(lexeme in table_of_id.keys()):
+    if lexeme in table_of_id.keys():
         num_row_s += 1
     else:
         num_line_s, lex, tok = get_symb(num_row_s)
@@ -321,12 +332,13 @@ def parse_comment(comment_line):
             num_line_s, lex, tok = get_symb(num_row_s)
     num_row_s += 1
 
-            
-# done (not sure)
+# зарарз працює як тіло функції/іф/фор.
+# пофіксити, щоб можна було без вкладеності парсити теж (не чекати на '}')
+# fix
 def parse_statementlist () :
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_symb(num_row_s)
-    while (lex != '}'):
+    while lex != '}':
         if lex == '//' or lex == '/*':
             parse_comment(num_line_s)
         elif lex == 'if':
@@ -336,15 +348,28 @@ def parse_statementlist () :
         elif lex =='var' or lex == 'const':
             parse_declarlist()
         elif lex == 'scanf' or lex == 'print':
-            print(lex, num_line_s, ' 339')
             parse_scanf_print(lex, tok)
         elif lex == 'return':
             parse_return()
         elif tok == 'ident':
-            fail_parse("змінна без const/var", num_line_s)
+            parse_declared_ident(lex, tok)
         else:
+            print("непередбачена логіка у функції parse_statementlist")
             fail_parse('return', (num_line_s, lex, tok))
         num_line_s, lex, tok = get_symb(num_row_s)
+
+
+# done
+def parse_declared_ident(lexeme, token):
+    global num_row_s, num_line_s
+    if lexeme in declared_ident:
+        num_row_s += 1
+        num_line_s, lex, tok = get_symb(num_row_s)
+        parse_token(':=', tok, num_row_s)
+        parse_declarpart()
+
+    else:
+        fail_parse("не оголошена змінна", (num_line_s, lex, tok))
 
 
 # done
@@ -354,10 +379,10 @@ def parse_scanf_print(lexeme, token):
     num_line_s, lex, tok = get_symb(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_symb(num_row_s)
-    if(lex != ')'):
+    if lex != ')':
         num_line_s, lex, tok = get_symb(num_row_s)
         _, lex1, tok1 = get_symb(num_row_s + 1)
-        while(lex != ')'):
+        while lex != ')':
             if lexeme == 'scanf':
                 print(lex, num_line_s)
                 if lex in table_of_id.keys() :
@@ -367,7 +392,7 @@ def parse_scanf_print(lexeme, token):
                     fail_parse('очікувався параметр', (num_line_s, lex, tok))
                 if lex == ',' :
                     _, lex1, tok1 = get_symb(num_row_s + 1)
-                    if (lex1 in table_of_id.keys()):
+                    if lex1 in table_of_id.keys():
                         num_row_s += 1
                         num_line_s, lex, tok = get_symb(num_row_s)
                     else:
@@ -380,15 +405,13 @@ def parse_scanf_print(lexeme, token):
                     fail_parse('очікувався параметр', (num_line_s, lex, tok))
                 if lex == ',' :
                     _, lex1, tok1 = get_symb(num_row_s + 1)
-                    if (lex1 in table_of_id.keys() or tok1 in params_types.keys()):
+                    if lex1 in table_of_id.keys() or tok1 in params_types.keys():
                         num_row_s += 1
                         num_line_s, lex, tok = get_symb(num_row_s)
                     else:
                         fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
     parse_token(')', tok, num_row_s)
 
-
-allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nill', 'boolean']
 
 # done
 def parse_declarlist():
@@ -403,6 +426,7 @@ def parse_declarlist():
     else:
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
+        declared_ident.append(lex)
         num_row_s += 1
         num_line_s, lex, tok = get_symb(num_row_s)
         if tok == 'assign_op':
@@ -412,13 +436,52 @@ def parse_declarlist():
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
 
 
+# тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
 # fix
 def parse_declarpart():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_symb(num_row_s)
     declarpart_line = num_line_s
     while num_line_s == declarpart_line:
-        print(num_line, lex, tok, num_row_s)
+        print(num_line_s, lex, tok, num_row_s)
+        if tok == 'add_op':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+        elif tok in params_types.keys() or tok == 'string':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+        # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
+        elif lex in table_of_id:
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+            if lex == '(':
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
+                parse_params(lex, tok)
+                num_line_s, lex, tok = get_symb(num_row_s)
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
+        elif lex == '^':
+            num_row_s += 1
+            num_line_s, lex, tok = get_symb(num_row_s)
+            print(lex)
+            if lex == '(' or lex in declared_ident or tok =="int" or tok =="float":
+                num_row_s += 1
+                num_line_s, lex, tok = get_symb(num_row_s)
+                # ХЗ ЩО ТУТ РОБИТИ
+        elif lex == '(':
+            parse_declarpart_two()
+        else:
+            fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
+
+
+def parse_declarpart_two():
+    global num_row_s, num_line_s
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+    declarpart_line = num_line_s
+    while num_line_s == declarpart_line or lex != ')':
+        print(num_line_s, lex, tok, num_row_s)
         if tok == 'add_op':
             num_row_s += 1
             num_line_s, lex, tok = get_symb(num_row_s)
@@ -432,10 +495,12 @@ def parse_declarpart():
             num_row_s += 1
             num_line_s, lex, tok = get_symb(num_row_s)
         elif lex == '(':
-            print('line 364')
+            parse_declarpart_two()
         else:
             fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-    print(num_line, lex, tok, num_row_s)
+    num_row_s += 1
+    num_line_s, lex, tok = get_symb(num_row_s)
+
 
 # done
 def parse_return():
@@ -568,9 +633,9 @@ def fail_parse(str,tuple):
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
         exit(8)
-    elif str == '':
+    elif str == 'не оголошена змінна':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} не оголошенна змінна ({1},{2})'.format(num_line, lexeme, token))
         exit(9)
     elif str == '':
         (num_line, lexeme, token) = tuple
