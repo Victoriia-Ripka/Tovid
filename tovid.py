@@ -220,8 +220,9 @@ allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nil', 'boole
 
 declared_ident = []
 
+
 # доповнювати
-def parse_program () :
+def parse_program():
     global num_row_s, num_line_s
     try:
         while num_row_s < len_table_of_symb:
@@ -495,7 +496,8 @@ def parse_declarpart_parentheses():
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     declarpart_line = num_line_s
     while lex != ')':
-
+        if declarpart_line != num_line_s:
+            fail_parse('не закрита кругла дужка', (declarpart_line, lex, tok))
         # print(num_line_s, lex, tok, num_row_s)
         # if tok == 'add_op':
         #     num_row_s += 1
@@ -587,7 +589,7 @@ def parse_import():
 
 
 # fix
-def parse_boolExpr():
+def parse_bool_expr():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     while(tok != 'rel_op'):
@@ -612,7 +614,7 @@ def parse_if():
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     if lex == 'if' and tok == 'keyword':
         num_row_s += 1
-        parse_boolExpr()
+        parse_bool_expr()
         parse_token('{', 'brack_op','')
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         parse_statementlist()
@@ -633,7 +635,7 @@ def parse_for():
     global num_row_s, num_line_s
     parse_declarlist()
     parse_token(';', 'punc', '')
-    parse_boolExpr()
+    parse_bool_expr()
     parse_token(';', 'punc', '')
     num_row_s += 3
     #parse_statementlist()
@@ -691,12 +693,16 @@ def fail_parse(str,tuple):
         exit(8)
     elif str == 'не оголошена змінна':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} не оголошенна змінна ({1},{2})'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} не оголошена змінна ({1},{2})'.format(num_line, lexeme, token))
         exit(9)
+    elif str == 'не закрита кругла дужка':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} не закрита кругла дужка'.format(num_line))
+        exit(10)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
-        exit(10)
+        exit(11)
 
 
 parse_program()

@@ -32,5 +32,12 @@ yefff
 // hellooo
 func sum(a) {
     var float a := 15
+    if a == 15 {
+        var int k = 10
+        return a
+    }
+    else {
+        return 5
+    }
     return a
 }
