@@ -10,6 +10,7 @@ func main() {
 	var int a
 	var float f
 	var boolean b
+	var int k := 10
 	var complex c1 := 2i
 	var complex c2 := -1+3i
 	var complex c3
@@ -30,14 +31,32 @@ yes yesd
 yefff
 */
 // hellooo
+
 func sum(a) {
     var float a := 15
     if a == 15 {
-        // var int k = 10
+        var int k := 10
         return a
     }
     else {
+        if a + a >= a * 3 {
+        return 2
+        }
         return 5
     }
     return a
+}
+
+for k := five; k >= nil; k := k + 12 {
+    if k != nil {
+        print("Not yet!")
+    }
+    else {
+        print(done)
+    }
+}
+
+for k <= 10 {
+    print(k)
+    k := k + 1
 }

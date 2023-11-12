@@ -443,7 +443,7 @@ def parse_declarpart():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     declarpart_line = num_line_s
-    while num_line_s == declarpart_line:
+    while num_line_s == declarpart_line and tok != 'punc':
         # print('ІТЕРАЦІЯ')
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         # print(num_line_s, lex, tok, num_row_s)
@@ -606,7 +606,7 @@ def parse_bool_expr():
         # print(lex, tok, 'line 350')
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
 # fix
 def parse_if():
@@ -633,12 +633,28 @@ def parse_if():
 # fix
 def parse_for():
     global num_row_s, num_line_s
-    parse_declarlist()
-    parse_token(';', 'punc', '')
-    parse_bool_expr()
-    parse_token(';', 'punc', '')
-    num_row_s += 3
-    #parse_statementlist()
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    back = 0
+    i = 0
+    while lex != '{':
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        num_row_s += 1
+        back+=1
+        if lex == ';':
+            i+=1
+    num_row_s -= back
+    if i == 2:
+        parse_declarlist()
+        parse_token(';', 'punc', '')
+        parse_bool_expr()
+        parse_token(';', 'punc', '')
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        while (lex != '{'):
+            num_row_s += 1
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        #parse_statementlist()
+    else:
+        parse_bool_expr()
     parse_token('{', 'brack_op', '')
     parse_statementlist()
     parse_token('}', 'brack_op', '')
