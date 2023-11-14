@@ -223,9 +223,6 @@ params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
-declared_ident = []
-
-
 # доповнювати
 def parse_program():
     global num_row_s, num_line_s
@@ -377,13 +374,12 @@ def parse_statementlist():
 def parse_declared_ident(lexeme, token):
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    if lexeme in declared_ident:
+    if lexeme in table_of_var.keys():
         num_row_s += 1
         parse_token(':=', 'assign_op', num_row_s)
         parse_declarpart()
-
     else:
-        fail_parse("не оголошена змінна", (lex, tok, num_row_s))
+        fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
 
 
 # done
@@ -446,7 +442,8 @@ def parse_declarlist():
     else:
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
-        declared_ident.append(lex)
+        if lex in table_of_var.keys():
+            fail_parse('повторне оголошення змінної',(num_line_s, lex, tok))
         current_id = lex
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -553,7 +550,7 @@ def parse_declarpart():
             # print(lex)
             if lex == '(':
                 parse_declarpart_parentheses()
-            elif lex in declared_ident or tok == "int" or tok == "float":
+            elif lex in table_of_var.keys() or tok == "int" or tok == "float":
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 # ХЗ ЩО ТУТ РОБИТИ
@@ -561,8 +558,15 @@ def parse_declarpart():
                 #       то значить все коректно, ми ж лише синтаксис перевіряємо
         elif tok == 'mult_op':
             arithm_operators_used = True
+            zero_devision_check = True if lex == '/' else False
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            if tok == 'int':
+                if not int(lex):
+                    fail_parse('ділення на нуль', (num_line_s, lex, tok))
+            elif tok == 'float':
+                if not float(lex):
+                    fail_parse('ділення на нуль', (num_line_s, lex, tok))
         elif tok == 'rel_op':
             boolean_expr = True
             num_row_s += 1
@@ -630,7 +634,7 @@ def parse_declarpart_parentheses():
             # print(lex)
             if lex == '(':
                 parse_declarpart_parentheses()
-            elif lex in declared_ident or tok == "int" or tok == "float":
+            elif lex in table_of_var.keys() or tok == "int" or tok == "float":
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 # тут натикаємось на закриту дужку
@@ -759,7 +763,7 @@ def get_current_lexeme (num_row) :
 
 
 # можна доповнювати
-def fail_parse(str,tuple):
+def fail_parse(str, tuple):
     if str == 'неочiкуваний кiнець програми':
         (lexeme, token, num_row) = tuple
         print('Parser ERROR: \n\t Неочiкуваний кiнець програми - в таблицi символiв (розбору) немає запису з номером {1}.\n\t Очiкувалось - {0}'.format((lexeme, token), num_row))
@@ -817,10 +821,20 @@ def fail_parse(str,tuple):
         print('Parser ERROR: \n\t В рядку {0} значення змінної ({1}, {2}) '
               'не відповідає оголошеному типу '.format(num_line, lexeme, token))
         exit(12)
+    elif str == 'ділення на нуль':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} відбувається ділення на нуль ({1}, {2})'
+              .format(num_line, lexeme, token))
+        exit(13)
+    elif str == 'повторне оголошення змінної':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} повторне оголошення змінної ({1}, {2})'
+              .format(num_line, lexeme, token))
+        exit(13)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(13)
+        exit(15)
 
 
 parse_program()
