@@ -1,4 +1,4 @@
-# Tovid language lexer and syntaxer
+# Tovid language lexer and parser
 
 token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
                'return': 'keyword', 'if': 'keyword', 'else': 'keyword', 'for': 'keyword', 'range': 'keyword',
@@ -45,8 +45,6 @@ table_of_const = {}
 table_of_var = {}
 table_of_named_const = {}
 bool_expr_results = ('true', 'false')
-# current_func_params = []
-# func_names = []
 
 state = init_state
 
@@ -118,7 +116,6 @@ def processing():
 
 def fail():
     global state, num_line, char
-    # print(num_line)
     if state == 101:
         print('Lexer: у рядку ', num_line, ' неочікуваний символ ' + char)
         exit(101)
@@ -368,7 +365,6 @@ def parse_statementlist():
         elif lex in table_of_var.keys():
             parse_declared_var(lex, tok)
         else:
-            # print('тутки з лексемою ', lex, ' та токеном ', tok)
             # print("непередбачена логіка у функції parse_statementlist()")
             fail_parse('return', (num_line_s, lex, tok))
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -383,7 +379,6 @@ def parse_declared_var(lexeme, token):
     if lexeme in table_of_var.keys():
         num_row_s += 1
         parse_token(':=', 'assign_op', num_row_s)
-        # print(num_line_s, lex, tok)
         new_type = parse_expression()
         index, old_type, _ = table_of_var[lexeme]
         if new_type == old_type:
@@ -406,7 +401,6 @@ def parse_scanf_print(lexeme, token):
         _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
         while lex != ')':
             if lexeme == 'scanf':
-                # print(lex, num_line_s)
                 if lex in table_of_id.keys():
                     num_row_s += 1
                     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -430,7 +424,6 @@ def parse_scanf_print(lexeme, token):
                     fail_parse('очікувався параметр', (num_line_s, lex, tok))
                 if lex == ',' or lex == '+':
                     _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
-                    print('lex1 = ', lex1, '\ntok1 = ', tok1)
                     if lex1 in table_of_var.keys() or lex1 in table_of_named_const.keys() or tok1 in params_types.keys():
                         if lex in table_of_var.keys():
                             if table_of_var[lex1][2] == 'undefined':
@@ -446,7 +439,6 @@ def parse_scanf_print(lexeme, token):
 def parse_declarlist():
     global num_row_s
     datatype_is_declared = False
-    # declared_datatype = ''
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     keyword = lex
     num_row_s += 1
@@ -470,7 +462,6 @@ def parse_declarlist():
         if tok == 'assign_op':
             num_row_s += 1
             value_datatype = parse_expression()
-            print('value_datatype =', value_datatype)
             if datatype_is_declared:
                 if declared_datatype == value_datatype:
                     if keyword == 'var':
@@ -511,26 +502,21 @@ def parse_expression():
     if lex in bool_expr_results:
         left_type = 'boolean'
         num_row_s += 1
-        # return result_type
     else:
         left_type = parse_arithm_expression()
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # print(num_line_s, lex, tok)
     result_type = left_type
     finish = False
 
     while not finish:
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # print(num_line_s, lex, tok)
         if tok == 'rel_op':
-            # print('на лексемі', lex, 'зайшли в іф ток == рел_оп')
             num_row_s += 1
             right_type = parse_arithm_expression()
-            # print(left_type, right_type)
-            if left_type == right_type:
+            if not (left_type == 'string' or right_type == 'string' or left_type == 'complex' or right_type == 'complex'):
                 result_type = 'boolean'
             else:
-                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                fail_parse('неможливо виконати порівняння', (num_line_s, left_type, right_type))
         else:
             finish = True
     return result_type
@@ -551,11 +537,12 @@ def parse_arithm_expression():
         if tok == 'add_op':
             num_row_s += 1
             right_type = parse_term()
-            # print(left_type, right_type)
             if left_type == right_type and left_type == 'int':
                 result_type = left_type
             elif left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            elif left_type == 'string' or right_type == 'string':
+                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
             elif left_type == 'complex' or right_type == 'complex':
                 result_type = 'complex'
             else:
@@ -581,6 +568,9 @@ def parse_term():
             right_type = parse_chunk()
             if left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            elif left_type == 'string' or right_type == 'string':
+                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+
             if operator == '/':
                 result_type = 'float'
             else:  # elif operator == '*':
@@ -609,6 +599,8 @@ def parse_chunk():
             right_type = parse_factor()
             if left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            elif left_type == 'string' or right_type == 'string':
+                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
             result_type = 'float'
         else:
             finish = True
@@ -624,12 +616,13 @@ def parse_factor():
             fail_parse('використання undefined змінної', (num_line_s, lex, tok))
         factor_type = table_of_var[lex][1]
     elif lex in table_of_named_const.keys():
-        if table_of_named_const[lex][1] != 'string':
-            factor_type = table_of_named_const[lex][1]
-        else:
-            fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+        factor_type = table_of_named_const[lex][1]
     elif lex in table_of_const.keys():
         factor_type = table_of_const[lex][0]
+    elif tok == 'string':
+        factor_type = 'string'
+    elif lex in bool_expr_results:
+        factor_type = 'boolean'
     elif lex == '(':
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -676,17 +669,14 @@ def parse_bool_expr():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     while(tok != 'rel_op'):
-        # print(lex, tok, 'line 350')
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
     if tok in 'rel_op':
-        # print(lex, tok, 'line 400')
         num_row_s += 1
     else:
         fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    while(tok != 'brack_op' and tok != 'punc'):
-        # print(lex, tok, 'line 350')
+    while tok != 'brack_op' and tok != 'punc':
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -736,7 +726,6 @@ def parse_for():
         while (lex != '{'):
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        #parse_statementlist()
     else:
         parse_bool_expr()
     parse_token('{', 'brack_op', '')
@@ -839,10 +828,15 @@ def fail_parse(str, tuple):
         print('Parser ERROR: \n\t В рядку {0} арифметична дія над стрічкою ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(18)
+    elif str == 'неможливо виконати порівняння':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неможливо виконати порівняння типів {1} і {2}'
+              .format(num_line, lexeme, token))
+        exit(19)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(19)
+        exit(20)
 
 
 parse_program()
