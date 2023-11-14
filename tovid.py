@@ -46,6 +46,7 @@ table_of_const = {}
 
 table_of_var = {}
 table_of_named_const = {}
+bool_expr_results = ('true', 'false')
 # current_func_params = []
 # func_names = []
 
@@ -361,14 +362,13 @@ def parse_statementlist():
         elif lex == 'for':
             parse_for()
         elif lex == 'var' or lex == 'const':
-            print('чи тут ми? ТАК!')
             parse_declarlist()
         elif lex == 'scanf' or lex == 'print':
             parse_scanf_print(lex, tok)
         elif lex == 'return':
             parse_return()
-        elif tok == 'ident':
-            parse_declared_ident(lex, tok)
+        elif lex in table_of_var.keys():
+            parse_declared_var(lex, tok)
         else:
             # print('тутки з лексемою ', lex, ' та токеном ', tok)
             # print("непередбачена логіка у функції parse_statementlist()")
@@ -377,15 +377,21 @@ def parse_statementlist():
 
 
 # done
-def parse_declared_ident(lexeme, token):
+def parse_declared_var(lexeme, token):
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    ident_line = num_line_s
+
     if lexeme in table_of_var.keys():
         num_row_s += 1
         parse_token(':=', 'assign_op', num_row_s)
-        parse_expression()
-        old_data = table_of_var[lexeme]
-        table_of_var[lexeme] = (old_data[0], old_data[1], 'assigned')
+        # print(num_line_s, lex, tok)
+        new_type = parse_expression()
+        index, old_type, _ = table_of_var[lexeme]
+        if new_type == old_type:
+            table_of_var[lexeme] = (index, old_type, 'assigned')
+        else:
+            fail_parse('значення змінної не відповідає оголошеному типу', (ident_line, lexeme, token))
     else:
         fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
 
@@ -441,19 +447,19 @@ def parse_scanf_print(lexeme, token):
 # done
 def parse_declarlist():
     global num_row_s
-    declared_datatype = False
-    # datatype = ''
+    datatype_is_declared = False
+    # declared_datatype = ''
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     keyword = lex
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     if lex in allowed_data_types:
-        datatype = lex
+        declared_datatype = lex
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        declared_datatype = True
+        datatype_is_declared = True
     elif lex in table_of_id.keys():
-        declared_datatype = False
+        datatype_is_declared = False
     else:
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
@@ -466,38 +472,34 @@ def parse_declarlist():
         if tok == 'assign_op':
             num_row_s += 1
             value_datatype = parse_expression()
-            if declared_datatype:
-                if datatype == value_datatype or value_datatype == 'from_function' or value_datatype == 'from_params':
+            print('value_datatype =', value_datatype)
+            if datatype_is_declared:
+                if declared_datatype == value_datatype:
                     if keyword == 'var':
-                        table_of_var[current_id] = (index, datatype, 'assigned')
+                        table_of_var[current_id] = (index, declared_datatype, 'assigned')
                     else:
-                        table_of_named_const[current_id] = (index, datatype)
+                        table_of_named_const[current_id] = (index, declared_datatype)
                 else:
                     fail_parse('значення змінної не відповідає оголошеному типу', (num_line_s, current_id, 'ident'))
             else:
-                if value_datatype == 'from_function' or value_datatype == 'from_params':
-                    fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
+                if keyword == 'var':
+                    table_of_var[current_id] = (index, value_datatype, 'assigned')
                 else:
-                    if keyword == 'var':
-                        table_of_var[current_id] = (index, value_datatype, 'assigned')
-                    else:
-                        table_of_named_const[current_id] = (index, value_datatype)
+                    table_of_named_const[current_id] = (index, value_datatype)
         else:
             if keyword == 'const':
                 num_row_s -= 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 fail_parse('не присвоєно значення константі', (num_line_s, lex, tok))
-            if not declared_datatype:
+            if not datatype_is_declared:
                 num_row_s -= 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
             else:
                 if keyword == 'var':
-                    table_of_var[current_id] = (index, datatype, 'undefined')
+                    table_of_var[current_id] = (index, declared_datatype, 'undefined')
                 else:
-                    table_of_named_const[current_id] = (index, datatype)
-
-
+                    table_of_named_const[current_id] = (index, declared_datatype)
     else:
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
 
@@ -506,16 +508,27 @@ def parse_declarlist():
 # fix
 def parse_expression():
     global num_row_s, num_line_s
-    left_type = parse_arithm_expression()
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+
+    if lex in bool_expr_results:
+        left_type = 'boolean'
+        num_row_s += 1
+        # return result_type
+    else:
+        left_type = parse_arithm_expression()
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        # print(num_line_s, lex, tok)
     result_type = left_type
     finish = False
 
     while not finish:
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        # print(num_line_s, lex, tok)
         if tok == 'rel_op':
+            # print('на лексемі', lex, 'зайшли в іф ток == рел_оп')
             num_row_s += 1
             right_type = parse_arithm_expression()
-            print(left_type, right_type)
+            # print(left_type, right_type)
             if left_type == right_type:
                 result_type = 'boolean'
             else:
@@ -536,11 +549,15 @@ def parse_arithm_expression():
         if tok == 'add_op':
             num_row_s += 1
             right_type = parse_term()
-            print(left_type, right_type)
-            if left_type == right_type:
+            # print(left_type, right_type)
+            if left_type == right_type and left_type == 'int':
                 result_type = left_type
-            else:
+            elif left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            elif left_type == 'complex' or right_type == 'complex':
+                result_type = 'complex'
+            else:
+                result_type = 'float'
         else:
             finish = True
     return result_type
@@ -556,13 +573,21 @@ def parse_term():
     while not finish:
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         if tok == 'mult_op':
+            operator = lex
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
             right_type = parse_chunk()
-            if left_type == right_type:
-                result_type = left_type
-            else:
+            if left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            if operator == '/':
+                result_type = 'float'
+            else:  # elif operator == '*':
+                if left_type == right_type and left_type == 'int':
+                    result_type = left_type
+                elif left_type == 'complex' or right_type == 'complex':
+                    result_type = 'complex'
+                else:
+                    result_type = 'float'
         else:
             finish = True
     return result_type
@@ -580,10 +605,9 @@ def parse_chunk():
         if tok == 'pow_op':
             num_row_s += 1
             right_type = parse_factor()
-            if left_type == right_type:
-                result_type = left_type
-            else:
+            if left_type == 'boolean' or right_type == 'boolean':
                 fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+            result_type = 'float'
         else:
             finish = True
     return result_type
@@ -598,7 +622,10 @@ def parse_factor():
             fail_parse('використання undefined змінної', (num_line_s, lex, tok))
         factor_type = table_of_var[lex][1]
     elif lex in table_of_named_const.keys():
-        factor_type = table_of_named_const[lex][1]
+        if table_of_named_const[lex][1] != 'string':
+            factor_type = table_of_named_const[lex][1]
+        else:
+            fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
     elif lex in table_of_const.keys():
         factor_type = table_of_const[lex][0]
     elif lex == '(':
@@ -609,151 +636,6 @@ def parse_factor():
         num_row_s -= 1
     num_row_s += 1
     return factor_type
-
-
-
-
-    # global num_row_s, num_line_s
-    # num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    # declarpart_line = num_line_s
-    # boolean_expr = False
-    # arithm_operators_used = False
-    # while num_line_s == declarpart_line and tok != 'punc':
-    #     # print('ІТЕРАЦІЯ')
-    #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #     # print(num_line_s, lex, tok, num_row_s)
-    #     if tok == 'add_op':
-    #         # print(num_line_s, lex, tok, num_row_s)
-    #         arithm_operators_used = True
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #
-    #     elif tok in params_types.keys():
-    #         value_datatype = tok
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #     # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
-    #     elif lex in table_of_id:
-    #         if lex in table_of_var.keys():
-    #             if table_of_var[lex][2] == 'assigned':
-    #                 value_datatype = table_of_var.get(lex)[1]
-    #             else:
-    #                 fail_parse('використання undefined змінної', (num_line_s, lex, tok))
-    #         elif lex in table_of_named_const.keys():
-    #             value_datatype = table_of_named_const.get(lex)[0]
-    #         else:
-    #             fail_parse('не оголошена змінна', (num_line_s, lex, tok))
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #     elif lex == '^':
-    #         arithm_operators_used = True
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #         # print(lex)
-    #         if lex == '(':
-    #             parse_expression_parentheses()
-    #         elif lex in table_of_var.keys() or tok == "int" or tok == "float":
-    #             num_row_s += 1
-    #             num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #             # ХЗ ЩО ТУТ РОБИТИ
-    #             # Діма: та нічого не треба робити, якщо айді або число,
-    #             #       то значить все коректно, ми ж лише синтаксис перевіряємо
-    #     elif tok == 'mult_op':
-    #         arithm_operators_used = True
-    #         zero_devision_check = True if lex == '/' else False
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #         if tok == 'int':
-    #             if not int(lex):
-    #                 fail_parse('ділення на нуль', (num_line_s, lex, tok))
-    #         elif tok == 'float':
-    #             if not float(lex):
-    #                 fail_parse('ділення на нуль', (num_line_s, lex, tok))
-    #     elif tok == 'rel_op':
-    #         boolean_expr = True
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #     elif lex == 'true' or lex == 'false':
-    #         boolean_expr = True
-    #         num_row_s += 1
-    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    #     elif lex == '(':
-    #         parse_expression_parentheses()
-    #     else:
-    #         fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-    # if boolean_expr:
-    #     value_datatype = 'boolean'
-    # elif arithm_operators_used:
-    #     value_datatype = 'float'
-    # return value_datatype
-
-
-def parse_expression_parentheses():
-    global num_row_s, num_line_s
-    num_row_s += 1
-
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    declarpart_line = num_line_s
-    while lex != ')':
-        if declarpart_line != num_line_s:
-            fail_parse('не закрита кругла дужка', (declarpart_line, lex, tok))
-        # print(num_line_s, lex, tok, num_row_s)
-        # if tok == 'add_op':
-        #     num_row_s += 1
-        #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # if tok in params_types.keys():
-        #     num_row_s += 1
-        #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # # if tok == 'string':
-        # #     num_row_s += 1
-        # #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # if lex in table_of_id:
-        #     num_row_s += 1
-        #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # elif lex == '(':
-        #     parse_expression_parentheses()
-        # else:
-        #     fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-        if tok == 'add_op':
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif tok in params_types.keys():
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
-        elif lex in table_of_id:
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            if lex == '(':
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                # parse_params(lex, tok)
-                # num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif lex == '^':
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            # print(lex)
-            if lex == '(':
-                parse_expression_parentheses()
-            elif lex in table_of_var.keys() or tok == "int" or tok == "float":
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                # тут натикаємось на закриту дужку
-        elif tok == 'mult_op':
-            # print('ми тут')
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif tok == 'rel_op':
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif lex == '(':
-            parse_expression_parentheses()
-        else:
-            fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
 
 # done
@@ -950,10 +832,15 @@ def fail_parse(str, tuple):
         print('Parser ERROR: \n\t В рядку {0} невідповідність типів {1} і {2}'
               .format(num_line, left_type, right_type))
         exit(17)
+    elif str == 'арифметична дія над стрічкою':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} арифметична дія над стрічкою ({1}, {2})'
+              .format(num_line, lexeme, token))
+        exit(18)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(18)
+        exit(19)
 
 
 parse_program()
@@ -961,5 +848,5 @@ parse_program()
 print('-' * 30)
 print('table_of_var: {0}'.format(table_of_var))
 print('-' * 30)
-print('table_of_named_const: {0}'.format(table_of_var))
+print('table_of_named_const: {0}'.format(table_of_named_const))
 print('-' * 30)
