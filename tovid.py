@@ -219,7 +219,7 @@ num_line_s = 1
 len_table_of_symb = len(table_of_symb)
 
 params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
-                'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
+                'string': 'keyword', 'boolean': 'keyword'}
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
@@ -378,6 +378,8 @@ def parse_declared_ident(lexeme, token):
         num_row_s += 1
         parse_token(':=', 'assign_op', num_row_s)
         parse_declarpart()
+        old_data = table_of_var[lexeme]
+        table_of_var[lexeme] = (old_data[0], old_data[1], 'assigned')
     else:
         fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
 
@@ -408,14 +410,21 @@ def parse_scanf_print(lexeme, token):
                     else:
                         fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
             else:  # elif lexeme == print
-                if lex in table_of_id.keys() or tok in params_types.keys() :
+                if lex in table_of_var.keys() or lex in table_of_const.keys() or tok in params_types.keys():
+                    if lex in table_of_var.keys():
+                        if table_of_var[lex][2] == 'undefined':
+                            fail_parse('використання undefined змінної', (num_line_s, lex, tok))
                     num_row_s += 1
                     num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 else:
                     fail_parse('очікувався параметр', (num_line_s, lex, tok))
                 if lex == ',' or lex == '+':
                     _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
-                    if lex1 in table_of_id.keys() or tok1 in params_types.keys():
+                    print('lex1 = ', lex1, '\ntok1 = ', tok1)
+                    if lex1 in table_of_var.keys() or lex1 in table_of_const.keys() or tok1 in params_types.keys():
+                        if lex in table_of_var.keys():
+                            if table_of_var[lex1][2] == 'undefined':
+                                fail_parse('використання undefined змінної', (num_line_s, lex1, tok1))
                         num_row_s += 1
                         num_line_s, lex, tok = get_current_lexeme(num_row_s)
                     else:
@@ -468,13 +477,17 @@ def parse_declarlist():
                     else:
                         table_of_const[current_id] = (value_datatype, index)
         else:
+            if keyword == 'const':
+                num_row_s -= 1
+                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                fail_parse('не присвоєно значення константі', (num_line_s, lex, tok))
             if not declared_datatype:
                 num_row_s -= 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
             else:
                 if keyword == 'var':
-                    table_of_var[current_id] = (index, datatype, 'assigned')
+                    table_of_var[current_id] = (index, datatype, 'undefined')
                 else:
                     table_of_const[current_id] = (datatype, index)
 
@@ -517,7 +530,10 @@ def parse_declarpart():
             # print('*' * 30)
             try:
                 if lex in table_of_var.keys():
-                    value_datatype = table_of_var.get(lex)[1]
+                    if table_of_var[lex][2] == 'assigned':
+                        value_datatype = table_of_var.get(lex)[1]
+                    else:
+                        fail_parse('використання undefined змінної', (num_line_s, lex, tok))
                 elif lex in table_of_const.keys():
                     value_datatype = table_of_const.get(lex)[0]
                 elif lex in func_names:
@@ -830,11 +846,21 @@ def fail_parse(str, tuple):
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} повторне оголошення змінної ({1}, {2})'
               .format(num_line, lexeme, token))
-        exit(13)
+        exit(14)
+    elif str == 'не присвоєно значення константі':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} не присвоєно значення константі ({1}, {2})'
+              .format(num_line, lexeme, token))
+        exit(15)
+    elif str == 'використання undefined змінної':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} використана змінна ({1}, {2}) до присвоєння значення'
+              .format(num_line, lexeme, token))
+        exit(16)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(15)
+        exit(17)
 
 
 parse_program()

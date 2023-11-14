@@ -7,7 +7,7 @@ func sum(term, term) {
 }
 // some
 func main() {
-	var int a
+	var int a := 1
 	var float f
 	var b := true 5
 	// var b := false
@@ -17,7 +17,7 @@ func main() {
 	var complex c3
 	const float five := 5.5
 	const done := "Done!"
-	scanf(a, b, c3)
+	scanf(a, b)
 	f := (a^2^3) + 3 / five
 	b := (a+a) < f
 	print(a, f, b)
@@ -59,7 +59,7 @@ for k := five; k >= nil; k := k + 12 {
         }
     }
     else {
-        print(done + True)
+        print(done)
     }
 }
 
