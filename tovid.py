@@ -260,6 +260,7 @@ def parse_func():
     global num_row_s, num_line_s, table_of_var, func_names
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    # не потрібно змінити порядок двох наступних рідків?
     func_names.append(lex)
     parse_identlist(lex)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -341,6 +342,7 @@ def parse_comment(comment_line):
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
     num_row_s += 1
+
 
 # зарарз працює як тіло функції/іф/фор.
 # пофіксити, щоб можна було без вкладеності парсити теж (не чекати на '}')
@@ -496,7 +498,6 @@ def parse_declarlist():
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
 
 
-
 # тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
 # fix
 def parse_declarpart():
@@ -600,6 +601,7 @@ def parse_declarpart():
     elif arithm_operators_used:
         value_datatype = 'float'
     return value_datatype
+
 
 def parse_declarpart_parentheses():
     global num_row_s, num_line_s
@@ -719,6 +721,7 @@ def parse_bool_expr():
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+
 
 # fix
 def parse_if():
