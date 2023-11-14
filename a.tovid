@@ -19,7 +19,7 @@ func main() {
 	const done := "Done!"
 	scanf(a, b)
 	f := (a^2^3) + 3 / five
-	b := false
+	b := (a+a) < five
 	print(a, f, b)
 
     c3 := c1 + c2

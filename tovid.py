@@ -506,6 +506,27 @@ def parse_declarlist():
 # fix
 def parse_expression():
     global num_row_s, num_line_s
+    left_type = parse_arithm_expression()
+    result_type = left_type
+    finish = False
+
+    while not finish:
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        if tok == 'rel_op':
+            num_row_s += 1
+            right_type = parse_arithm_expression()
+            print(left_type, right_type)
+            if left_type == right_type:
+                result_type = 'boolean'
+            else:
+                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+        else:
+            finish = True
+    return result_type
+
+
+def parse_arithm_expression():
+    global num_row_s, num_line_s
     left_type = parse_term()
     result_type = left_type
     finish = False
