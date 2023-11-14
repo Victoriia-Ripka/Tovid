@@ -46,8 +46,8 @@ table_of_const = {}
 
 table_of_var = {}
 table_of_named_const = {}
-current_func_params = []
-func_names = []
+# current_func_params = []
+# func_names = []
 
 state = init_state
 
@@ -260,17 +260,16 @@ def parse_program():
 
 # done
 def parse_func():
-    global num_row_s, num_line_s, table_of_var, func_names
+    global num_row_s, num_line_s, table_of_var
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     # не потрібно змінити порядок двох наступних рідків?
-    func_names.append(lex)
     parse_identlist(lex)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    parse_params(lex, tok)
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    # parse_params(lex, tok)
+    # num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
     parse_statementlist()
@@ -283,27 +282,27 @@ def parse_func():
 
 
 # done
-def parse_params(lexeme, token):
-    global num_row_s, num_line_s, current_func_params
-    if lexeme != ')':
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
-        while lex != ')':
-            if lex in table_of_id.keys() or tok in params_types.keys():
-                current_func_params.append(lex)
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            else:
-                fail_parse('очікувався параметр', (num_line_s, lex, tok))
-            if lex == ',':
-                num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
-                if lex1 in table_of_id.keys() or tok1 in params_types.keys():
-                    current_func_params.append(lex)
-                    num_row_s += 1
-                    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                else:
-                    fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
-    num_line_s += 1
+# def parse_params(lexeme, token):
+#     global num_row_s, num_line_s, current_func_params
+#     if lexeme != ')':
+#         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#         num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
+#         while lex != ')':
+#             if lex in table_of_id.keys() or tok in params_types.keys():
+#                 current_func_params.append(lex)
+#                 num_row_s += 1
+#                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#             else:
+#                 fail_parse('очікувався параметр', (num_line_s, lex, tok))
+#             if lex == ',':
+#                 num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
+#                 if lex1 in table_of_id.keys() or tok1 in params_types.keys():
+#                     current_func_params.append(lex)
+#                     num_row_s += 1
+#                     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#                 else:
+#                     fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
+#     num_line_s += 1
 
 
 # done
@@ -526,42 +525,15 @@ def parse_declarpart():
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
         elif lex in table_of_id:
-            # all_var_const_funcnames = []
-            # all_var_const_funcnames.extend(table_of_var.keys())
-            # all_var_const_funcnames.extend(table_of_const.keys())
-            # all_var_const_funcnames.extend(func_names)
-            # print('*' * 30)
-            # print(all_var_const_funcnames)
-            # print('*' * 30)
-            try:
-                if lex in table_of_var.keys():
-                    if table_of_var[lex][2] == 'assigned':
-                        value_datatype = table_of_var.get(lex)[1]
-                    else:
-                        fail_parse('використання undefined змінної', (num_line_s, lex, tok))
-                elif lex in table_of_named_const.keys():
-                    value_datatype = table_of_named_const.get(lex)[0]
-                elif lex in func_names:
-                    value_datatype = 'from_function'
-            except TypeError:
-                if lex in current_func_params:
-                    value_datatype = 'from_params'
+            if lex in table_of_var.keys():
+                if table_of_var[lex][2] == 'assigned':
+                    value_datatype = table_of_var.get(lex)[1]
                 else:
-                    fail_parse('не оголошена змінна', (num_line_s, lex, tok))
-            except KeyError:
-                if lex in current_func_params:
-                    value_datatype = 'from_params'
-                else:
-                    fail_parse('не оголошена змінна', (num_line_s, lex, tok))
-            if lex in func_names:
-                value_datatype = 'from_function'
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                parse_token('(', 'brack_op', '')
-                parse_params(lex, tok)
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                # num_row_s += 1
-                # num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                    fail_parse('використання undefined змінної', (num_line_s, lex, tok))
+            elif lex in table_of_named_const.keys():
+                value_datatype = table_of_named_const.get(lex)[0]
+            else:
+                fail_parse('не оголошена змінна', (num_line_s, lex, tok))
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '^':
@@ -646,8 +618,8 @@ def parse_declarpart_parentheses():
             if lex == '(':
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                parse_params(lex, tok)
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                # parse_params(lex, tok)
+                # num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '^':

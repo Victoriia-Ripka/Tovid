@@ -1,8 +1,8 @@
 package main
 import "math/rand"
 
-func sum(term, term) {
-	const float h := term + term
+func sum() {
+	const float h := 10 + 5.2
 	return h
 }
 // some
@@ -22,7 +22,7 @@ func main() {
 	b := (a+a) < f
 	print(a, f, b)
 
-    c3 := sum(c1, c2)
+    c3 := c1 + c2
     print(c3)
     print("\n" + done)
 }
