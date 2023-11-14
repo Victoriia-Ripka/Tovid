@@ -249,7 +249,7 @@ def parse_program():
                 fail_parse("змінна без const/var", (num_line_s, lex, tok))
             else:
                 parse_statementlist()
-        print("Parser: Синтаксичний аналiз завершився успiшно")
+        print("Parser: Синтаксичний і семантичний аналiз завершився успiшно")
         return True
     except SystemExit as e:
         print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
