@@ -361,6 +361,7 @@ def parse_statementlist():
         elif lex == 'for':
             parse_for()
         elif lex == 'var' or lex == 'const':
+            print('чи тут ми? ТАК!')
             parse_declarlist()
         elif lex == 'scanf' or lex == 'print':
             parse_scanf_print(lex, tok)
@@ -370,7 +371,7 @@ def parse_statementlist():
             parse_declared_ident(lex, tok)
         else:
             # print('тутки з лексемою ', lex, ' та токеном ', tok)
-            print("непередбачена логіка у функції parse_statementlist")
+            # print("непередбачена логіка у функції parse_statementlist()")
             fail_parse('return', (num_line_s, lex, tok))
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
@@ -514,6 +515,7 @@ def parse_expression():
         if tok == 'add_op':
             num_row_s += 1
             right_type = parse_term()
+            print(left_type, right_type)
             if left_type == right_type:
                 result_type = left_type
             else:
@@ -534,6 +536,7 @@ def parse_term():
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         if tok == 'mult_op':
             num_row_s += 1
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
             right_type = parse_chunk()
             if left_type == right_type:
                 result_type = left_type
@@ -582,6 +585,8 @@ def parse_factor():
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         factor_type = parse_expression()
         parse_token(')', 'brack_op', '')
+        num_row_s -= 1
+    num_row_s += 1
     return factor_type
 
 
@@ -871,7 +876,7 @@ def fail_parse(str, tuple):
         exit(5)
     elif str == 'return':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} очікується нормальне повернення return'.format(num_line))
+        print('Parser ERROR: \n\t В рядку {0} неочікуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
         exit(6)
     elif str == 'не дозволений тип даних':
         (num_line, lexeme, token) = tuple
