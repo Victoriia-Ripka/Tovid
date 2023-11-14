@@ -1,0 +1,69 @@
+Program = {func | import | package | DeclarList | StatementList}
+DeclarList = Declaration { Declaration }
+Declaration = DeclarType [DataType] IdentList AssignOp
+Expression
+DeclarType = var | const
+IdentList = Ident{‘,’ Ident }
+DataType = int | float | complex | string | boolean
+DoSection = ‘{’ StatementList ‘}’
+StatementList = Statement {Statement}
+Statement = Assign | Inp | Out | ForStatement | IfStatement |
+WhileStatement
+Assign = Ident AssignOp Expression
+Expression = BooleanExpression | ArithmExpression
+BooleanExpression = ArithmExpression RelOp ArithmExpression
+ArithmExpression = [Sign] Term
+
+| ArithmExpression Sign Term
+| ArithmExpression ‘+’ ‘+’
+| ArithmExpression ‘-’ ‘-’
+Term = Factor | Term ’*’ Factor | Term ’/’ Factor
+
+Factor = Ident | Const | ’(’ ArithmExpression ’)’
+Inp = scanf ‘(’ IdentList ‘)’
+Out = print ‘(’ IdentList ‘)’
+IfStatement = if BooleanExpression DoSection [ElseStatement]
+ElseStatement = else DoSection
+ForStatement = for Declaration ‘;’ BooleanExpression ‘;’
+ArithmExpression DoSection
+WhileStatement = for BooleanExpression DoSection
+Const = IntNum | FloatNum | ComplexNum | Boolean
+IntNum = [Sign] UnsignedInt | ‘nil’ | ‘iota’
+FloatNum = [Sign] UnsignedFloat | ‘nil’
+ComplexNum = [Sign] (UnsignedInt | UnsignedFloat) Sign
+[(UnsignedInt | UnsignedFloat )] ‘i’
+UnsignedInt = Digit {Digit}
+UnsignedFloat = UnsignedInt ‘.’ UnsignedInt
+Boolean = true | false
+String = ‘“’ {Letter | Digit | SpecialSign} ‘”’
+StringSign = ‘“’ | ‘”’
+Ident = Letter { Letter | Digit }
+Letter = ‘a’ | ‘b’ | ‘c’ | ‘d’ | ‘e’ | ‘f’ | ‘g’ | ‘h’ | ‘i’ |
+‘j’ | ‘k’ | ‘l’ | ‘m’ | ‘n’ | ‘o’ | ‘p’ | ‘q’ | ‘r’ | ‘s’ |
+‘t’ | ‘u’ | ‘v’ | ‘w’ | ‘x’ | ‘y’ | ‘z’ | 'A' | 'B' | 'C' |
+'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' |
+'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' |
+'X' | 'Y' | 'Z'
+Digit = ‘0’ | ‘1’ | ‘2’ | ‘3’ | ‘4’ | ‘5’ | ‘6’ | ‘7’ | ‘8’ |
+‘9’
+SpecialSign = ‘.’ | ‘,’ | ‘;’ | ‘:’ | ‘(’ | ‘)’ | ‘=’ | ‘+’ |
+‘-’ | ‘*’ | ‘/’ | ‘^’ | ‘<’ | ‘>’ | WhiteSpace | EndOfLine |
+‘{’ | ‘}’
+WhiteSpace = ‘ ’ | ‘\t’
+EndOfLine = ‘\n’ | ‘\r’ | ‘\r\n’ |‘\n\r’
+SpecSymbols = MathOp | RelOp | BracketsOp | AssignOp | Punct
+MathOp = AddOp | MultOp | PowerOp
+AddOp = ‘+’ | ‘-’
+MultOp = ‘*’ | ‘/’
+
+3
+
+Стельмах Дмитро, Романін Анатолій, Ріпка Вікторія
+Група ТВ-13
+Практична робота No2
+
+PowerOp = ‘^’
+RelOp = ‘==’ | ‘<=’ | ‘<’ | ‘>’ | ‘>=’ | ‘!=’
+BracketsOp = ‘(’ | ‘)’ | ‘{’ | ‘}’
+AssignOp = ‘:=’
+Punct = ‘.’ | ‘,’ | ‘:’

@@ -41,6 +41,9 @@ F_error = {101, 102, 103}
 table_of_symb = {}
 table_of_id = {}
 table_of_const = {}
+table_of_var = {}
+current_func_params = []
+func_names = []
 
 state = init_state
 
@@ -216,7 +219,7 @@ len_table_of_symb = len(table_of_symb)
 params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
                 'string': 'keyword', 'boolean': 'keyword', 'true': 'keyword', 'false': 'keyword'}
 
-allowed_data_types = ['int', 'float', 'complex', 'string', 'iota', 'nil', 'boolean']
+allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
 declared_ident = []
 
@@ -242,7 +245,7 @@ def parse_program():
             elif lex == 'scanf' or lex == 'print':
                 parse_scanf_print(lex, tok)
             elif lex == 'var' or lex == 'const':
-                    parse_declarlist()
+                parse_declarlist()
             elif lex in table_of_id.keys():
                 fail_parse("змінна без const/var", (num_line_s, lex, tok))
             else:
@@ -255,9 +258,10 @@ def parse_program():
 
 # done
 def parse_func():
-    global num_row_s, num_line_s
+    global num_row_s, num_line_s, table_of_var, func_names
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    func_names.append(lex)
     parse_identlist(lex)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token('(', tok, num_row_s)
@@ -269,15 +273,20 @@ def parse_func():
     parse_statementlist()
     parse_token('}', tok, num_row_s)
 
+    # скоуп закінчився. Очищаємо змінні та параметри функції
+    table_of_var.clear()
+    current_func_params.clear()
+
 
 # done
 def parse_params(lexeme, token):
-    global num_row_s, num_line_s
+    global num_row_s, num_line_s, current_func_params
     if lexeme != ')':
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
         while lex != ')':
-            if lex in table_of_id.keys() or tok in params_types.keys() :
+            if lex in table_of_id.keys() or tok in params_types.keys():
+                current_func_params.append(lex)
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
             else:
@@ -285,6 +294,7 @@ def parse_params(lexeme, token):
             if lex == ',':
                 num_line_s1, lex1, tok1 = get_current_lexeme(num_row_s + 1)
                 if lex1 in table_of_id.keys() or tok1 in params_types.keys():
+                    current_func_params.append(lex)
                     num_row_s += 1
                     num_line_s, lex, tok = get_current_lexeme(num_row_s)
                 else:
@@ -336,7 +346,7 @@ def parse_comment(comment_line):
 # зарарз працює як тіло функції/іф/фор.
 # пофіксити, щоб можна було без вкладеності парсити теж (не чекати на '}')
 # fix
-def parse_statementlist () :
+def parse_statementlist():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     while lex != '}':
@@ -346,7 +356,7 @@ def parse_statementlist () :
             parse_if()
         elif lex == 'for':
             parse_for()
-        elif lex =='var' or lex == 'const':
+        elif lex == 'var' or lex == 'const':
             parse_declarlist()
         elif lex == 'scanf' or lex == 'print':
             parse_scanf_print(lex, tok)
@@ -355,6 +365,7 @@ def parse_statementlist () :
         elif tok == 'ident':
             parse_declared_ident(lex, tok)
         else:
+            # print('тутки з лексемою ', lex, ' та токеном ', tok)
             print("непередбачена логіка у функції parse_statementlist")
             fail_parse('return', (num_line_s, lex, tok))
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -417,24 +428,61 @@ def parse_scanf_print(lexeme, token):
 # done
 def parse_declarlist():
     global num_row_s
+    declared_datatype = False
+    # datatype = ''
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    keyword = lex
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     if lex in allowed_data_types:
+        datatype = lex
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        declared_datatype = True
     elif lex in table_of_id.keys():
-        num_row_s = num_row_s
+        declared_datatype = False
     else:
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
         declared_ident.append(lex)
+        current_id = lex
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_const) + 1
         if tok == 'assign_op':
             num_row_s += 1
-            parse_declarpart()
+            value_datatype = parse_declarpart()
+            if declared_datatype:
+                if datatype == value_datatype or value_datatype == 'from_function' or value_datatype == 'from_params':
+                    if keyword == 'var':
+                        table_of_var[current_id] = (index, datatype, 'assigned')
+                    else:
+                        table_of_const[current_id] = (datatype, index)
+                else:
+                    fail_parse('значення змінної не відповідає оголошеному типу', (num_line_s, current_id, 'ident'))
+            else:
+                if value_datatype == 'from_function' or value_datatype == 'from_params':
+                    fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
+                else:
+                    if keyword == 'var':
+                        table_of_var[current_id] = (index, value_datatype, 'assigned')
+                    else:
+                        table_of_const[current_id] = (value_datatype, index)
+        else:
+            if not declared_datatype:
+                num_row_s -= 1
+                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
+            else:
+                if keyword == 'var':
+                    table_of_var[current_id] = (index, datatype, 'assigned')
+                else:
+                    table_of_const[current_id] = (datatype, index)
+
+
     else:
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
+
 
 
 # тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
@@ -443,6 +491,7 @@ def parse_declarpart():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     declarpart_line = num_line_s
+    boolean_expr = False
     while num_line_s == declarpart_line and tok != 'punc':
         # print('ІТЕРАЦІЯ')
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -451,21 +500,50 @@ def parse_declarpart():
             # print(num_line_s, lex, tok, num_row_s)
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            value_datatype = 'float'
         elif tok in params_types.keys():
+            value_datatype = tok
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
         elif lex in table_of_id:
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            if lex == '(':
+            # all_var_const_funcnames = []
+            # all_var_const_funcnames.extend(table_of_var.keys())
+            # all_var_const_funcnames.extend(table_of_const.keys())
+            # all_var_const_funcnames.extend(func_names)
+            # print('*' * 30)
+            # print(all_var_const_funcnames)
+            # print('*' * 30)
+            try:
+                if lex in table_of_var.keys():
+                    value_datatype = table_of_var.get(lex)[1]
+                elif lex in table_of_const.keys():
+                    value_datatype = table_of_const.get(lex)[0]
+                elif lex in func_names:
+                    value_datatype = 'from_function'
+            except TypeError:
+                if lex in current_func_params:
+                    value_datatype = 'from_params'
+                else:
+                    fail_parse('не оголошена змінна', (num_line_s, lex, tok))
+            except KeyError:
+                if lex in current_func_params:
+                    value_datatype = 'from_params'
+                else:
+                    fail_parse('не оголошена змінна', (num_line_s, lex, tok))
+            if lex in func_names:
+                value_datatype = 'from_function'
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                parse_token('(', 'brack_op', '')
                 parse_params(lex, tok)
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                # num_row_s += 1
+                # num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            num_row_s += 1
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '^':
+            value_datatype = 'float'
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
             # print(lex)
@@ -478,16 +556,25 @@ def parse_declarpart():
                 # Діма: та нічого не треба робити, якщо айді або число,
                 #       то значить все коректно, ми ж лише синтаксис перевіряємо
         elif tok == 'mult_op':
+            value_datatype = 'float'
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif tok == 'rel_op':
+            boolean_expr = True
+            num_row_s += 1
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        elif lex == 'true' or lex == 'false':
+            boolean_expr = True
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '(':
             parse_declarpart_parentheses()
         else:
             fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-
+    if boolean_expr:
+        value_datatype = 'boolean'
+    print(value_datatype)
+    return value_datatype
 
 def parse_declarpart_parentheses():
     global num_row_s, num_line_s
@@ -674,21 +761,21 @@ def fail_parse(str,tuple):
         exit(1001)
     elif str == 'невiдповiднiсть токенiв':
         (num_line, lexeme, token, lex, tok) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
         exit(1)
     elif str == 'очікувався ідентифікатор':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор'.format(
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався ідентифікатор'.format(
             num_line, lexeme, token))
         exit(2)
     elif str == 'очікувався рядок':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався рядок'.format(
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався рядок'.format(
             num_line, lexeme, token))
         exit(3)
     elif str == 'очікувався параметр':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
             num_line, lexeme, token))
         exit(4)
     elif str == 'змінна без const/var':
@@ -701,24 +788,34 @@ def fail_parse(str,tuple):
         exit(6)
     elif str == 'не дозволений тип даних':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
         exit(7)
     elif str == 'присвоювання':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
         exit(8)
     elif str == 'не оголошена змінна':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} не оголошена змінна ({1},{2})'.format(num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} не оголошена змінна ({1}, {2})'.format(num_line, lexeme, token))
         exit(9)
     elif str == 'не закрита кругла дужка':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} не закрита кругла дужка'.format(num_line))
         exit(10)
+    elif str == 'неможливо визначити тип':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} неможливо визначити тип змінної ({1}, {2}) '
+              'без присвоєння значення'.format(num_line, lexeme, token))
+        exit(11)
+    elif str == 'значення змінної не відповідає оголошеному типу':
+        (num_line, lexeme, token) = tuple
+        print('Parser ERROR: \n\t В рядку {0} значення змінної ({1}, {2}) '
+              'не відповідає оголошеному типу '.format(num_line, lexeme, token))
+        exit(12)
     elif str == '':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1},{2})'.format(num_line, lexeme, token))
-        exit(11)
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
+        exit(13)
 
 
 parse_program()
