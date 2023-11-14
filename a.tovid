@@ -33,10 +33,10 @@ yefff
 */
 // hellooo
 
-func sum(a) {
-    var int a := 15
+func sum() {
+    // var int a := 15
     if a == 15 {
-        var int k := 10
+        // var int k := 10
         return a
     }
     else {
@@ -48,13 +48,13 @@ func sum(a) {
     return a
 }
 
-for k := five; k >= nil; k := k + 12 {
-    if k != nil {
+for m := five; m >= nil; m := m + 12 {
+    if m != nil {
         print("Not yet!")
-        if k != nil {
+        if m != nil {
             print("Not yet!")
         }
-        if k != nil {
+        if m != nil {
             print("Not yet!")
         }
     }
@@ -63,7 +63,7 @@ for k := five; k >= nil; k := k + 12 {
     }
 }
 
-var k := five
+// var k := five
 for k <= 10 {
     print(k)
     k := k + 1

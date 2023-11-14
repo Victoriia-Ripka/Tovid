@@ -43,7 +43,9 @@ F_error = {101, 102, 103}
 table_of_symb = {}
 table_of_id = {}
 table_of_const = {}
+
 table_of_var = {}
+table_of_named_const = {}
 current_func_params = []
 func_names = []
 
@@ -213,6 +215,7 @@ print('table_of_const:{0}'.format(table_of_const))
 print('-' * 30)
 
 
+
 # -------------------------------------------------------
 num_row_s = 1
 num_line_s = 1
@@ -274,8 +277,9 @@ def parse_func():
     parse_token('}', tok, num_row_s)
 
     # скоуп закінчився. Очищаємо змінні та параметри функції
-    table_of_var.clear()
-    current_func_params.clear()
+    # table_of_var.clear()
+    # current_func_params.clear()
+    # Уже ні :)))
 
 
 # done
@@ -412,7 +416,7 @@ def parse_scanf_print(lexeme, token):
                     else:
                         fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
             else:  # elif lexeme == print
-                if lex in table_of_var.keys() or lex in table_of_const.keys() or tok in params_types.keys():
+                if lex in table_of_var.keys() or lex in table_of_named_const.keys() or tok in params_types.keys():
                     if lex in table_of_var.keys():
                         if table_of_var[lex][2] == 'undefined':
                             fail_parse('використання undefined змінної', (num_line_s, lex, tok))
@@ -423,7 +427,7 @@ def parse_scanf_print(lexeme, token):
                 if lex == ',' or lex == '+':
                     _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
                     print('lex1 = ', lex1, '\ntok1 = ', tok1)
-                    if lex1 in table_of_var.keys() or lex1 in table_of_const.keys() or tok1 in params_types.keys():
+                    if lex1 in table_of_var.keys() or lex1 in table_of_named_const.keys() or tok1 in params_types.keys():
                         if lex in table_of_var.keys():
                             if table_of_var[lex1][2] == 'undefined':
                                 fail_parse('використання undefined змінної', (num_line_s, lex1, tok1))
@@ -458,7 +462,7 @@ def parse_declarlist():
         current_id = lex
         num_row_s += 1
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_const) + 1
+        index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_named_const) + 1
         if tok == 'assign_op':
             num_row_s += 1
             value_datatype = parse_declarpart()
@@ -467,7 +471,7 @@ def parse_declarlist():
                     if keyword == 'var':
                         table_of_var[current_id] = (index, datatype, 'assigned')
                     else:
-                        table_of_const[current_id] = (datatype, index)
+                        table_of_named_const[current_id] = (index, datatype)
                 else:
                     fail_parse('значення змінної не відповідає оголошеному типу', (num_line_s, current_id, 'ident'))
             else:
@@ -477,7 +481,7 @@ def parse_declarlist():
                     if keyword == 'var':
                         table_of_var[current_id] = (index, value_datatype, 'assigned')
                     else:
-                        table_of_const[current_id] = (value_datatype, index)
+                        table_of_named_const[current_id] = (index, value_datatype)
         else:
             if keyword == 'const':
                 num_row_s -= 1
@@ -491,7 +495,7 @@ def parse_declarlist():
                 if keyword == 'var':
                     table_of_var[current_id] = (index, datatype, 'undefined')
                 else:
-                    table_of_const[current_id] = (datatype, index)
+                    table_of_named_const[current_id] = (index, datatype)
 
 
     else:
@@ -535,8 +539,8 @@ def parse_declarpart():
                         value_datatype = table_of_var.get(lex)[1]
                     else:
                         fail_parse('використання undefined змінної', (num_line_s, lex, tok))
-                elif lex in table_of_const.keys():
-                    value_datatype = table_of_const.get(lex)[0]
+                elif lex in table_of_named_const.keys():
+                    value_datatype = table_of_named_const.get(lex)[0]
                 elif lex in func_names:
                     value_datatype = 'from_function'
             except TypeError:
@@ -803,8 +807,8 @@ def fail_parse(str, tuple):
         exit(3)
     elif str == 'очікувався параметр':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався ідентифікатор як параметр функції'.format(
-            num_line, lexeme, token))
+        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t '
+              'Очікувався ідентифікатор як параметр функції'.format(num_line, lexeme, token))
         exit(4)
     elif str == 'змінна без const/var':
         (num_line) = tuple
@@ -867,3 +871,9 @@ def fail_parse(str, tuple):
 
 
 parse_program()
+
+print('-' * 30)
+print('table_of_var: {0}'.format(table_of_var))
+print('-' * 30)
+print('table_of_named_const: {0}'.format(table_of_var))
+print('-' * 30)
