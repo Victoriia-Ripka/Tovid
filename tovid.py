@@ -382,7 +382,7 @@ def parse_declared_ident(lexeme, token):
     if lexeme in table_of_var.keys():
         num_row_s += 1
         parse_token(':=', 'assign_op', num_row_s)
-        parse_declarpart()
+        parse_expression()
         old_data = table_of_var[lexeme]
         table_of_var[lexeme] = (old_data[0], old_data[1], 'assigned')
     else:
@@ -464,7 +464,7 @@ def parse_declarlist():
         index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_named_const) + 1
         if tok == 'assign_op':
             num_row_s += 1
-            value_datatype = parse_declarpart()
+            value_datatype = parse_expression()
             if declared_datatype:
                 if datatype == value_datatype or value_datatype == 'from_function' or value_datatype == 'from_params':
                     if keyword == 'var':
@@ -503,83 +503,166 @@ def parse_declarlist():
 
 # тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
 # fix
-def parse_declarpart():
+def parse_expression():
+    global num_row_s, num_line_s
+    left_type = parse_term()
+    result_type = left_type
+    finish = False
+
+    while not finish:
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        if tok == 'add_op':
+            num_row_s += 1
+            right_type = parse_term()
+            if left_type == right_type:
+                result_type = left_type
+            else:
+                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+        else:
+            finish = True
+    return result_type
+
+
+def parse_term():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    declarpart_line = num_line_s
-    boolean_expr = False
-    arithm_operators_used = False
-    while num_line_s == declarpart_line and tok != 'punc':
-        # print('ІТЕРАЦІЯ')
+    left_type = parse_chunk()
+    result_type = left_type
+    finish = False
+
+    while not finish:
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # print(num_line_s, lex, tok, num_row_s)
-        if tok == 'add_op':
-            # print(num_line_s, lex, tok, num_row_s)
-            arithm_operators_used = True
+        if tok == 'mult_op':
             num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-
-        elif tok in params_types.keys():
-            value_datatype = tok
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
-        elif lex in table_of_id:
-            if lex in table_of_var.keys():
-                if table_of_var[lex][2] == 'assigned':
-                    value_datatype = table_of_var.get(lex)[1]
-                else:
-                    fail_parse('використання undefined змінної', (num_line_s, lex, tok))
-            elif lex in table_of_named_const.keys():
-                value_datatype = table_of_named_const.get(lex)[0]
+            right_type = parse_chunk()
+            if left_type == right_type:
+                result_type = left_type
             else:
-                fail_parse('не оголошена змінна', (num_line_s, lex, tok))
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif lex == '^':
-            arithm_operators_used = True
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            # print(lex)
-            if lex == '(':
-                parse_declarpart_parentheses()
-            elif lex in table_of_var.keys() or tok == "int" or tok == "float":
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
-                # ХЗ ЩО ТУТ РОБИТИ
-                # Діма: та нічого не треба робити, якщо айді або число,
-                #       то значить все коректно, ми ж лише синтаксис перевіряємо
-        elif tok == 'mult_op':
-            arithm_operators_used = True
-            zero_devision_check = True if lex == '/' else False
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            if tok == 'int':
-                if not int(lex):
-                    fail_parse('ділення на нуль', (num_line_s, lex, tok))
-            elif tok == 'float':
-                if not float(lex):
-                    fail_parse('ділення на нуль', (num_line_s, lex, tok))
-        elif tok == 'rel_op':
-            boolean_expr = True
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif lex == 'true' or lex == 'false':
-            boolean_expr = True
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        elif lex == '(':
-            parse_declarpart_parentheses()
+                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
         else:
-            fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
-    if boolean_expr:
-        value_datatype = 'boolean'
-    elif arithm_operators_used:
-        value_datatype = 'float'
-    return value_datatype
+            finish = True
+    return result_type
 
 
-def parse_declarpart_parentheses():
+def parse_chunk():
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    left_type = parse_factor()
+    result_type = left_type
+    finish = False
+
+    while not finish:
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        if tok == 'pow_op':
+            num_row_s += 1
+            right_type = parse_factor()
+            if left_type == right_type:
+                result_type = left_type
+            else:
+                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+        else:
+            finish = True
+    return result_type
+
+
+def parse_factor():
+    global num_row_s, num_line_s
+    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    factor_type = ''
+    if lex in table_of_var.keys():
+        if table_of_var[lex][2] == 'undefined':
+            fail_parse('використання undefined змінної', (num_line_s, lex, tok))
+        factor_type = table_of_var[lex][1]
+    elif lex in table_of_named_const.keys():
+        factor_type = table_of_named_const[lex][1]
+    elif lex in table_of_const.keys():
+        factor_type = table_of_const[lex][0]
+    elif lex == '(':
+        num_row_s += 1
+        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        factor_type = parse_expression()
+        parse_token(')', 'brack_op', '')
+    return factor_type
+
+
+
+
+    # global num_row_s, num_line_s
+    # num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    # declarpart_line = num_line_s
+    # boolean_expr = False
+    # arithm_operators_used = False
+    # while num_line_s == declarpart_line and tok != 'punc':
+    #     # print('ІТЕРАЦІЯ')
+    #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #     # print(num_line_s, lex, tok, num_row_s)
+    #     if tok == 'add_op':
+    #         # print(num_line_s, lex, tok, num_row_s)
+    #         arithm_operators_used = True
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #
+    #     elif tok in params_types.keys():
+    #         value_datatype = tok
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #     # в цьому іфі повинні парситися виклики функцій sum(c1, c2) або присвоєння змінної
+    #     elif lex in table_of_id:
+    #         if lex in table_of_var.keys():
+    #             if table_of_var[lex][2] == 'assigned':
+    #                 value_datatype = table_of_var.get(lex)[1]
+    #             else:
+    #                 fail_parse('використання undefined змінної', (num_line_s, lex, tok))
+    #         elif lex in table_of_named_const.keys():
+    #             value_datatype = table_of_named_const.get(lex)[0]
+    #         else:
+    #             fail_parse('не оголошена змінна', (num_line_s, lex, tok))
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #     elif lex == '^':
+    #         arithm_operators_used = True
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #         # print(lex)
+    #         if lex == '(':
+    #             parse_expression_parentheses()
+    #         elif lex in table_of_var.keys() or tok == "int" or tok == "float":
+    #             num_row_s += 1
+    #             num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #             # ХЗ ЩО ТУТ РОБИТИ
+    #             # Діма: та нічого не треба робити, якщо айді або число,
+    #             #       то значить все коректно, ми ж лише синтаксис перевіряємо
+    #     elif tok == 'mult_op':
+    #         arithm_operators_used = True
+    #         zero_devision_check = True if lex == '/' else False
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #         if tok == 'int':
+    #             if not int(lex):
+    #                 fail_parse('ділення на нуль', (num_line_s, lex, tok))
+    #         elif tok == 'float':
+    #             if not float(lex):
+    #                 fail_parse('ділення на нуль', (num_line_s, lex, tok))
+    #     elif tok == 'rel_op':
+    #         boolean_expr = True
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #     elif lex == 'true' or lex == 'false':
+    #         boolean_expr = True
+    #         num_row_s += 1
+    #         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    #     elif lex == '(':
+    #         parse_expression_parentheses()
+    #     else:
+    #         fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
+    # if boolean_expr:
+    #     value_datatype = 'boolean'
+    # elif arithm_operators_used:
+    #     value_datatype = 'float'
+    # return value_datatype
+
+
+def parse_expression_parentheses():
     global num_row_s, num_line_s
     num_row_s += 1
 
@@ -602,7 +685,7 @@ def parse_declarpart_parentheses():
         #     num_row_s += 1
         #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
         # elif lex == '(':
-        #     parse_declarpart_parentheses()
+        #     parse_expression_parentheses()
         # else:
         #     fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
         if tok == 'add_op':
@@ -627,7 +710,7 @@ def parse_declarpart_parentheses():
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
             # print(lex)
             if lex == '(':
-                parse_declarpart_parentheses()
+                parse_expression_parentheses()
             elif lex in table_of_var.keys() or tok == "int" or tok == "float":
                 num_row_s += 1
                 num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -640,7 +723,7 @@ def parse_declarpart_parentheses():
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '(':
-            parse_declarpart_parentheses()
+            parse_expression_parentheses()
         else:
             fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
     num_row_s += 1
@@ -836,10 +919,15 @@ def fail_parse(str, tuple):
         print('Parser ERROR: \n\t В рядку {0} використана змінна ({1}, {2}) до присвоєння значення'
               .format(num_line, lexeme, token))
         exit(16)
+    elif str == 'невідповідність типів':
+        (num_line, left_type, right_type) = tuple
+        print('Parser ERROR: \n\t В рядку {0} невідповідність типів {1} і {2}'
+              .format(num_line, left_type, right_type))
+        exit(17)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(17)
+        exit(18)
 
 
 parse_program()
