@@ -7,13 +7,14 @@ token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var':
                'print': 'keyword', 'scanf': 'keyword', ':=': 'assign_op',
                '.': 'punc', ',': 'punc', ':': 'punc', ';': 'punc',
                ' ': 'ws', '\t': 'ws', '\n': 'cr', '\r': 'cr', '\n\r': 'cr', '\r\n': 'cr',
-               '-': 'add_op', '+': 'add_op', '*': 'mult_op', '/': 'mult_op', '^': 'pow_op',
+               '*': 'mult_op', '/': 'mult_op', '^': 'pow_op',
                '==': 'rel_op', '>': 'rel_op', '>=': 'rel_op', '<': 'rel_op', '<=': 'rel_op', '!=': 'rel_op',
                '> ': 'rel_op', '>= ': 'rel_op', '< ': 'rel_op', '<= ': 'rel_op', '!= ': 'rel_op',
                '(': 'brack_op', ')': 'brack_op', '{': 'brack_op', '}': 'brack_op',
                '//': 'comment', '/*': 'comment', '*/': 'comment'
                }
-token_state_table = {2: 'ident', 4: 'int', 7: 'float', 11: 'complex', 19: 'string', 16: 'rel_op', 17: 'rel_op'}
+token_state_table = {2: 'ident', 4: 'int', 7: 'float', 11: 'complex', 19: 'string', 16: 'rel_op', 17: 'rel_op',
+                     28: 'add_op'}
 
 
 stf = {(0, 'Letter'): 1, (1, 'Letter'): 1, (1, 'Digit'): 1, (1, 'other'): 2,
@@ -25,17 +26,18 @@ stf = {(0, 'Letter'): 1, (1, 'Letter'): 1, (1, 'Digit'): 1, (1, 'other'): 2,
        (0, 'other'): 101,
        (0, 'cr'): 14,
        (0, 'ws'): 0,
+       (0, '-'): 27, (0, '+'): 27, (27, 'Digit'): 3, (27, 'other'): 28,
        (0, '='): 15, (0, '!'): 15, (15, '='): 16, (15, 'other'): 101,
        (0, '<'): 22, (0, '>'): 22, (22, '='): 16, (22, 'other'): 17,
        (0, '"'): 18, (18, 'other'): 18, (18, '"'): 19,
-       (0, '{'): 20, (0, '}'): 20, (0, '^'): 20, (0, '-'): 20, (0, '+'): 20,
+       (0, '{'): 20, (0, '}'): 20, (0, '^'): 20,
        (0, '('): 20, (0, ')'): 20, (0, ','): 20, (0, ';'): 20,
        (0, '/'): 26, (0, '*'): 23, (26, 'other'): 25, (23, 'other'): 25,
-       (26, '/'): 24, (26, '*'): 24, (23, '/'): 24
+       (26, '/'): 24, (26, '*'): 24, (23, '/'): 24,
        }
 init_state = 0
-F = {2, 4, 7, 11, 13, 14, 16, 17, 19, 20, 24, 25, 101, 102, 103}
-F_star = {2, 4, 7, 11, 17, 25}
+F = {2, 4, 7, 11, 13, 14, 16, 17, 19, 20, 24, 25, 28, 101, 102, 103}
+F_star = {2, 4, 7, 11, 17, 25, 28}
 F_error = {101, 102, 103}
 
 table_of_symb = {}
@@ -492,15 +494,17 @@ def parse_declarpart():
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     declarpart_line = num_line_s
     boolean_expr = False
+    arithm_operators_used = False
     while num_line_s == declarpart_line and tok != 'punc':
         # print('ІТЕРАЦІЯ')
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         # print(num_line_s, lex, tok, num_row_s)
         if tok == 'add_op':
             # print(num_line_s, lex, tok, num_row_s)
+            arithm_operators_used = True
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            value_datatype = 'float'
+
         elif tok in params_types.keys():
             value_datatype = tok
             num_row_s += 1
@@ -543,7 +547,7 @@ def parse_declarpart():
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif lex == '^':
-            value_datatype = 'float'
+            arithm_operators_used = True
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
             # print(lex)
@@ -556,7 +560,7 @@ def parse_declarpart():
                 # Діма: та нічого не треба робити, якщо айді або число,
                 #       то значить все коректно, ми ж лише синтаксис перевіряємо
         elif tok == 'mult_op':
-            value_datatype = 'float'
+            arithm_operators_used = True
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
         elif tok == 'rel_op':
@@ -573,7 +577,8 @@ def parse_declarpart():
             fail_parse('неправильна задекларована змінна', (num_line_s, lex, tok))
     if boolean_expr:
         value_datatype = 'boolean'
-    print(value_datatype)
+    elif arithm_operators_used:
+        value_datatype = 'float'
     return value_datatype
 
 def parse_declarpart_parentheses():
