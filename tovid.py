@@ -702,21 +702,21 @@ def parse_import():
 
 
 # fix
-def parse_bool_expr():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    while(tok != 'rel_op'):
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    if tok in 'rel_op':
-        num_row_s += 1
-    else:
-        fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    while tok != 'brack_op' and tok != 'punc':
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+# def parse_bool_expr():
+#     global num_row_s, num_line_s
+#     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#     while(tok != 'rel_op'):
+#         num_row_s += 1
+#         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#     if tok in 'rel_op':
+#         num_row_s += 1
+#     else:
+#         fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
+#     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#     while tok != 'brack_op' and tok != 'punc':
+#         num_row_s += 1
+#         num_line_s, lex, tok = get_current_lexeme(num_row_s)
+#     num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
 
 # fix
