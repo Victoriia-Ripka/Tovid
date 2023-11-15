@@ -757,8 +757,10 @@ def parse_for():
     if i == 2:
         parse_declarlist()
         parse_token(';', 'punc', '')
-        parse_bool_expr()
+        if parse_expression() != 'boolean':
+            fail_parse('очікувався булевий вираз', num_line_s)
         parse_token(';', 'punc', '')
+        parse_arithm_expression()
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         while (lex != '{'):
             num_row_s += 1
@@ -875,10 +877,14 @@ def fail_parse(str, tuple):
         print('\033[91mParser ERROR: \n\t В рядку {0} переприсвоюється значення констаниті ({1}, {2}), що неможливо'
               .format(num_line, lexeme, token))
         exit(20)
+    elif str == 'очікувався булевий вираз':
+        (num_line) = tuple
+        print('\033[91mParser ERROR: \n\t В рядку {0} очікувався булевий вираз'.format(num_line))
+        exit(22)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(21)
+        exit(22)
 
 
 parse_program()
