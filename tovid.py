@@ -75,10 +75,17 @@ def lex():
                 lexeme = ''
             else:
                 lexeme += char
-        print('Lexer: Лексичний аналіз завершено успішно')
+
+            # на випадок відсутности відступу чи нового рядка в кінці файлу
+            if num_char == len_code:
+                num_char += 1
+                state = next_state(state, 'cr')
+                if is_final(state):
+                    processing()
+        print('\n\033[0m\033[1m\033[4mLexer\033[0m: \033[92mЛексичний аналіз завершено успішно\033[0m')
     except SystemExit as error:
         f_success = (False, 'Lexer')
-        print('Lexer: Аварійне завершення програми з кодом {0}'.format(error))
+        print('\n\033[0m\033[1m\033[4mLexer\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.format(error))
 
 
 def processing():
@@ -87,8 +94,6 @@ def processing():
         if state == 14:
             num_line += 1
             state = init_state
-        elif state == init_state:
-            ...
         elif state in F_star:
             token = get_token(state, lexeme)
             if token != 'keyword':
@@ -118,13 +123,14 @@ def processing():
 def fail():
     global state, num_line, char
     if state == 101:
-        print('Lexer: у рядку ', num_line, ' неочікуваний символ ' + char)
+        print('\033[91mLexer ERROR: у рядку ', num_line, ' неочікуваний символ ' + char, '\033[0m')
         exit(101)
     if state == 102:
-        print('Lexer: у рядку ', num_line, ' очікувався символ =, а не ' + char)
+        print('\033[91mLexer ERROR: у рядку ', num_line, ' очікувався символ =, а не ' + char, '\033[0m')
         exit(102)
     if state == 103:
-        print('Lexer: у рядку ', num_line, ' очікувалася цифра, а не ' + char, ' неможливо сформувати дробове число')
+        print('\033[91mLexer ERROR: у рядку ', num_line, ' очікувалася цифра, а не ' + char,
+              ' неможливо сформувати дробове число\033[0m')
         exit(103)
 
 
@@ -203,13 +209,13 @@ def index_id_const(state, lexeme):
 lex()
 
 
-print('-' * 30)
+print('\n', '-' * 30)
 print('table_of_symb:{0}'.format(table_of_symb))
 print('-' * 30)
 print('table_of_id:{0}'.format(table_of_id))
 print('-' * 30)
 print('table_of_const:{0}'.format(table_of_const))
-print('-' * 30)
+print('-' * 30, '\n')
 
 
 
@@ -249,10 +255,10 @@ def parse_program():
                 fail_parse("змінна без const/var", (num_line_s, lex, tok))
             else:
                 parse_statementlist()
-        print("Parser: Синтаксичний і семантичний аналiз завершився успiшно")
+        print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
         return True
     except SystemExit as e:
-        print("Parser: Аварiйне завершення програми з кодом {0}".format(e))
+        print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[91mАварiйне завершення програми з кодом {0}\033[0m".format(e))
 
 
 # done
@@ -503,6 +509,7 @@ def parse_expression():
     if lex in bool_expr_results:
         left_type = 'boolean'
         num_row_s += 1
+        finish = True
     else:
         left_type = parse_arithm_expression()
         try:
@@ -512,7 +519,6 @@ def parse_expression():
         else:
             finish = False
     result_type = left_type
-
 
     while not finish:
         try:
@@ -765,104 +771,106 @@ def get_current_lexeme (num_row) :
 def fail_parse(str, tuple):
     if str == 'неочiкуваний кiнець програми':
         (lexeme, token, num_row) = tuple
-        print('Parser ERROR: \n\t Неочiкуваний кiнець програми - в таблицi символiв (розбору) немає запису з номером {1}.\n\t Очiкувалось - {0}'.format((lexeme, token), num_row))
+        print('\033[91mParser ERROR: \n\t Неочiкуваний кiнець програми - в таблицi символiв (розбору) немає запису з номером {1}.\n\t Очiкувалось - {0}\033[0m'.format((lexeme, token), num_row))
         exit(1001)
     elif str == 'невiдповiднiсть токенiв':
         (num_line, lexeme, token, lex, tok) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очiкувався - ({3},{4})'.format(num_line, lexeme, token, lex, tok))
         exit(1)
     elif str == 'очікувався ідентифікатор':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався ідентифікатор'.format(
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався ідентифікатор'.format(
             num_line, lexeme, token))
         exit(2)
     elif str == 'очікувався рядок':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався рядок'.format(
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t Очікувався рядок'.format(
             num_line, lexeme, token))
         exit(3)
     elif str == 'очікувався параметр':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t '
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t '
               'Очікувався ідентифікатор як параметр функції'.format(num_line, lexeme, token))
         exit(4)
     elif str == 'змінна без const/var':
         (num_line) = tuple
-        print('Parser ERROR: \n\t В рядку {0} очікується var/const'.format(num_line))
+        print('\033[91mParser ERROR: \n\t В рядку {0} очікується var/const'.format(num_line))
         exit(5)
     elif str == 'return':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочікуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочікуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
         exit(6)
     elif str == 'не дозволений тип даних':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
         exit(7)
     elif str == 'присвоювання':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). Очікується присвоювання (:=)'.format(num_line, lexeme, token))
         exit(8)
     elif str == 'не оголошена змінна':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} не оголошена змінна ({1}, {2})'.format(num_line, lexeme, token))
+        print('\033[91mParser ERROR: \n\t В рядку {0} не оголошена змінна ({1}, {2})'.format(num_line, lexeme, token))
         exit(9)
     elif str == 'не закрита кругла дужка':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} не закрита кругла дужка'.format(num_line))
+        print('\033[91mParser ERROR: \n\t В рядку {0} не закрита кругла дужка'.format(num_line))
         exit(10)
     elif str == 'неможливо визначити тип':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неможливо визначити тип змінної ({1}, {2}) '
+        print('\033[91mParser ERROR: \n\t В рядку {0} неможливо визначити тип змінної ({1}, {2}) '
               'без присвоєння значення'.format(num_line, lexeme, token))
         exit(11)
     elif str == 'значення змінної не відповідає оголошеному типу':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} значення змінної ({1}, {2}) '
+        print('\033[91mParser ERROR: \n\t В рядку {0} значення змінної ({1}, {2}) '
               'не відповідає оголошеному типу '.format(num_line, lexeme, token))
         exit(12)
     elif str == 'ділення на нуль':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} відбувається ділення на нуль ({1}, {2})'
+        print('\033[91mParser ERROR: \n\t В рядку {0} відбувається ділення на нуль ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(13)
     elif str == 'повторне оголошення змінної':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} повторне оголошення змінної ({1}, {2})'
+        print('\033[91mParser ERROR: \n\t В рядку {0} повторне оголошення змінної ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(14)
     elif str == 'не присвоєно значення константі':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} не присвоєно значення константі ({1}, {2})'
+        print('\033[91mParser ERROR: \n\t В рядку {0} не присвоєно значення константі ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(15)
     elif str == 'використання undefined змінної':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} використана змінна ({1}, {2}) до присвоєння значення'
+        print('\033[91mParser ERROR: \n\t В рядку {0} використана змінна ({1}, {2}) до присвоєння значення'
               .format(num_line, lexeme, token))
         exit(16)
     elif str == 'невідповідність типів':
         (num_line, left_type, right_type) = tuple
-        print('Parser ERROR: \n\t В рядку {0} невідповідність типів {1} і {2}'
+        print('\033[91mParser ERROR: \n\t В рядку {0} невідповідність типів {1} і {2}'
               .format(num_line, left_type, right_type))
         exit(17)
     elif str == 'арифметична дія над стрічкою':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} арифметична дія над стрічкою ({1}, {2})'
+        print('\033[91mParser ERROR: \n\t В рядку {0} арифметична дія над стрічкою ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(18)
     elif str == 'неможливо виконати порівняння':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неможливо виконати порівняння типів {1} і {2}'
+        print('\033[91mParser ERROR: \n\t В рядку {0} неможливо виконати порівняння типів {1} і {2}'
               .format(num_line, lexeme, token))
         exit(19)
     elif str == '':
         (num_line, lexeme, token) = tuple
-        print('Parser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
+        print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
         exit(20)
 
 
 parse_program()
 
+
+print('\033[0m')
 print('-' * 30)
 print('table_of_var: {0}'.format(table_of_var))
 print('-' * 30)
