@@ -239,20 +239,23 @@ def parse_program():
                 parse_func()
             elif lex == 'import':
                 parse_import()
-            elif lex == '//' or lex == '/*':
-                parse_comment(num_line_s)
             elif lex == 'package':
                 parse_package()
+            if lex == '//' or lex == '/*':
+                parse_comment(num_line_s)
             elif lex == 'if':
                 parse_if()
             elif lex == 'for':
                 parse_for()
-            elif lex == 'scanf' or lex == 'print':
-                parse_scanf_print(lex, tok)
             elif lex == 'var' or lex == 'const':
                 parse_declarlist()
             elif lex in table_of_id.keys():
-                fail_parse("змінна без const/var", (num_line_s, lex, tok))
+                if lex in table_of_var.keys() or lex in table_of_named_const.keys():
+                    parse_declared_var(lex, tok)  # переприсвоєння (якщо const то видасть помилку всередині)
+                else:
+                    fail_parse('оголошення змінної чи константи без var/const', (num_line_s, lex, tok))
+            elif lex == 'scanf' or lex == 'print':
+                parse_scanf_print(lex, tok)
             else:
                 parse_statementlist()
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
@@ -355,7 +358,9 @@ def parse_comment(comment_line):
 # fix
 def parse_statementlist():
     global num_row_s, num_line_s
+
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    print(num_line_s, lex, tok)
     while lex != '}':
         if lex == '//' or lex == '/*':
             parse_comment(num_line_s)
@@ -369,8 +374,11 @@ def parse_statementlist():
             parse_scanf_print(lex, tok)
         elif lex == 'return':
             parse_return()
-        elif lex in table_of_var.keys():
-            parse_declared_var(lex, tok)
+        elif lex in table_of_id.keys():
+            if lex in table_of_var.keys() or lex in table_of_named_const.keys():
+                parse_declared_var(lex, tok)
+            else:
+                fail_parse('оголошення змінної чи константи без var/const', (num_line_s, lex, tok))
         else:
             # print("непередбачена логіка у функції parse_statementlist()")
             fail_parse('return', (num_line_s, lex, tok))
@@ -392,6 +400,8 @@ def parse_declared_var(lexeme, token):
             table_of_var[lexeme] = (index, old_type, 'assigned')
         else:
             fail_parse('значення змінної не відповідає оголошеному типу', (ident_line, lexeme, token))
+    elif lexeme in table_of_named_const.keys():
+        fail_parse('переприсвоєння значення константі', (num_line_s, lex, tok))
     else:
         fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
 
@@ -792,7 +802,7 @@ def fail_parse(str, tuple):
         print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2}). \n\t '
               'Очікувався ідентифікатор як параметр функції'.format(num_line, lexeme, token))
         exit(4)
-    elif str == 'змінна без const/var':
+    elif str == 'оголошення змінної чи константи без var/const':
         (num_line) = tuple
         print('\033[91mParser ERROR: \n\t В рядку {0} очікується var/const'.format(num_line))
         exit(5)
@@ -861,10 +871,15 @@ def fail_parse(str, tuple):
         print('\033[91mParser ERROR: \n\t В рядку {0} неможливо виконати порівняння типів {1} і {2}'
               .format(num_line, lexeme, token))
         exit(19)
+    elif str == 'переприсвоєння значення константі':
+        (num_line, lexeme, token) = tuple
+        print('\033[91mParser ERROR: \n\t В рядку {0} переприсвоюється значення констаниті ({1}, {2}), що неможливо'
+              .format(num_line, lexeme, token))
+        exit(20)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
-        exit(20)
+        exit(21)
 
 
 parse_program()
