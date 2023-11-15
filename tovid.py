@@ -725,7 +725,8 @@ def parse_if():
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     if lex == 'if' and tok == 'keyword':
         num_row_s += 1
-        parse_bool_expr()
+        if parse_expression() != 'boolean':
+            fail_parse('очікувався булевий вираз', num_line_s)
         parse_token('{', 'brack_op','')
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         parse_statementlist()
@@ -762,11 +763,13 @@ def parse_for():
         parse_token(';', 'punc', '')
         parse_arithm_expression()
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        while (lex != '{'):
+        while lex != '{':
             num_row_s += 1
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
     else:
-        parse_bool_expr()
+        num_row_s += 1
+        if parse_expression() != 'boolean':
+            fail_parse('очікувався булевий вираз', num_line_s)
     parse_token('{', 'brack_op', '')
     parse_statementlist()
     parse_token('}', 'brack_op', '')
