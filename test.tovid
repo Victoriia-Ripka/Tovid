@@ -1,4 +1,3 @@
 const int five := 5
 var float f := (a^2) + 3 / five
-f := 7
 var m := 10

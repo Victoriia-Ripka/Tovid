@@ -239,14 +239,16 @@ def parse_program():
                 parse_func()
             elif lex == 'import':
                 parse_import()
+            elif lex == '//' or lex == '/*':
+                parse_comment(num_line_s)
             elif lex == 'package':
                 parse_package()
-            if lex == '//' or lex == '/*':
-                parse_comment(num_line_s)
             elif lex == 'if':
                 parse_if()
             elif lex == 'for':
                 parse_for()
+            elif lex == 'scanf' or lex == 'print':
+                parse_scanf_print(lex, tok)
             elif lex == 'var' or lex == 'const':
                 parse_declarlist()
             elif lex in table_of_id.keys():
@@ -254,8 +256,6 @@ def parse_program():
                     parse_declared_var(lex, tok)  # переприсвоєння (якщо const то видасть помилку всередині)
                 else:
                     fail_parse('оголошення змінної чи константи без var/const', (num_line_s, lex, tok))
-            elif lex == 'scanf' or lex == 'print':
-                parse_scanf_print(lex, tok)
             else:
                 parse_statementlist()
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
@@ -360,7 +360,6 @@ def parse_statementlist():
     global num_row_s, num_line_s
 
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    print(num_line_s, lex, tok)
     while lex != '}':
         if lex == '//' or lex == '/*':
             parse_comment(num_line_s)
