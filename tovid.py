@@ -48,7 +48,8 @@ bool_expr_results = ('true', 'false')
 
 state = init_state
 
-f = open('a.tovid', 'r')
+file_name = input('Введіть файл (без .tovid): ')
+f = open(f'{file_name}.tovid', 'r')
 source_code = f.read()
 f.close()
 
@@ -504,21 +505,30 @@ def parse_expression():
         num_row_s += 1
     else:
         left_type = parse_arithm_expression()
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        try:
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        except KeyError:
+            finish = True
+        else:
+            finish = False
     result_type = left_type
-    finish = False
+
 
     while not finish:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        if tok == 'rel_op':
-            num_row_s += 1
-            right_type = parse_arithm_expression()
-            if not (left_type == 'string' or right_type == 'string' or left_type == 'complex' or right_type == 'complex'):
-                result_type = 'boolean'
-            else:
-                fail_parse('неможливо виконати порівняння', (num_line_s, left_type, right_type))
-        else:
+        try:
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        except KeyError:
             finish = True
+        else:
+            if tok == 'rel_op':
+                num_row_s += 1
+                right_type = parse_arithm_expression()
+                if not (left_type == 'string' or right_type == 'string' or left_type == 'complex' or right_type == 'complex'):
+                    result_type = 'boolean'
+                else:
+                    fail_parse('неможливо виконати порівняння', (num_line_s, left_type, right_type))
+            else:
+                finish = True
     return result_type
 
 
@@ -533,22 +543,26 @@ def parse_arithm_expression():
     finish = False
 
     while not finish:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        if tok == 'add_op':
-            num_row_s += 1
-            right_type = parse_term()
-            if left_type == right_type and left_type == 'int':
-                result_type = left_type
-            elif left_type == 'boolean' or right_type == 'boolean':
-                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
-            elif left_type == 'string' or right_type == 'string':
-                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
-            elif left_type == 'complex' or right_type == 'complex':
-                result_type = 'complex'
-            else:
-                result_type = 'float'
-        else:
+        try:
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        except KeyError:
             finish = True
+        else:
+            if tok == 'add_op':
+                num_row_s += 1
+                right_type = parse_term()
+                if left_type == right_type and left_type == 'int':
+                    result_type = left_type
+                elif left_type == 'boolean' or right_type == 'boolean':
+                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                elif left_type == 'string' or right_type == 'string':
+                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+                elif left_type == 'complex' or right_type == 'complex':
+                    result_type = 'complex'
+                else:
+                    result_type = 'float'
+            else:
+                finish = True
     return result_type
 
 
@@ -560,28 +574,32 @@ def parse_term():
     finish = False
 
     while not finish:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        if tok == 'mult_op':
-            operator = lex
-            num_row_s += 1
+        try:
             num_line_s, lex, tok = get_current_lexeme(num_row_s)
-            right_type = parse_chunk()
-            if left_type == 'boolean' or right_type == 'boolean':
-                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
-            elif left_type == 'string' or right_type == 'string':
-                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
-
-            if operator == '/':
-                result_type = 'float'
-            else:  # elif operator == '*':
-                if left_type == right_type and left_type == 'int':
-                    result_type = left_type
-                elif left_type == 'complex' or right_type == 'complex':
-                    result_type = 'complex'
-                else:
-                    result_type = 'float'
-        else:
+        except KeyError:
             finish = True
+        else:
+            if tok == 'mult_op':
+                operator = lex
+                num_row_s += 1
+                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                right_type = parse_chunk()
+                if left_type == 'boolean' or right_type == 'boolean':
+                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                elif left_type == 'string' or right_type == 'string':
+                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+
+                if operator == '/':
+                    result_type = 'float'
+                else:  # elif operator == '*':
+                    if left_type == right_type and left_type == 'int':
+                        result_type = left_type
+                    elif left_type == 'complex' or right_type == 'complex':
+                        result_type = 'complex'
+                    else:
+                        result_type = 'float'
+            else:
+                finish = True
     return result_type
 
 
@@ -593,17 +611,21 @@ def parse_chunk():
     finish = False
 
     while not finish:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        if tok == 'pow_op':
-            num_row_s += 1
-            right_type = parse_factor()
-            if left_type == 'boolean' or right_type == 'boolean':
-                fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
-            elif left_type == 'string' or right_type == 'string':
-                fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
-            result_type = 'float'
-        else:
+        try:
+            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        except KeyError:
             finish = True
+        else:
+            if tok == 'pow_op':
+                num_row_s += 1
+                right_type = parse_factor()
+                if left_type == 'boolean' or right_type == 'boolean':
+                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                elif left_type == 'string' or right_type == 'string':
+                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+                result_type = 'float'
+            else:
+                finish = True
     return result_type
 
 
