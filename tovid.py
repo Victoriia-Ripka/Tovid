@@ -75,6 +75,13 @@ def lex():
                 lexeme = ''
             else:
                 lexeme += char
+
+            # на випадок відсутности відступу чи нового рядка в кінці файлу
+            if num_char == len_code:
+                num_char += 1
+                state = next_state(state, 'cr')
+                if is_final(state):
+                    processing()
         print('Lexer: Лексичний аналіз завершено успішно')
     except SystemExit as error:
         f_success = (False, 'Lexer')
@@ -87,8 +94,6 @@ def processing():
         if state == 14:
             num_line += 1
             state = init_state
-        elif state == init_state:
-            ...
         elif state in F_star:
             token = get_token(state, lexeme)
             if token != 'keyword':
