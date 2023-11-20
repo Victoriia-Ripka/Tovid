@@ -1,7 +1,7 @@
 package main
 import "math/rand"
 
-func sum(term, term) {
+func sum() {
 	const float a := term + term
 	return a
 }
@@ -13,14 +13,15 @@ func main() {
 	var complex c1 := 2i
 	var complex c2 := -1+3i
 	var complex c3
-	const int five := 5.5
+	const int five := 5
 	const done := "Done!"
+	a := 1
 	scanf(a)
 	f := (a^2) + 3/five
-	b := (a+a) < f
+	b := (a+a) > f
 	print(a, f, b)
 
-	for a := 0; a <= five; a++ {
+	for d := 0; a <= five; a++ {
         if a > b == 0 {
            	print(b)
         }
@@ -29,20 +30,6 @@ func main() {
         }
     }
 
-    for k := five; k >= nil; k-- {
-        if k != nil {
-            print("Not yet!")
-        }
-        else {
-            print(done)
-        }
-    }
-
-    for 2 > 1 {
-    	break
-    }
-
-    c3 := sum(c1, c2)
-    print(c3)
-    print("\n" + done)
 }
+
+sum()
