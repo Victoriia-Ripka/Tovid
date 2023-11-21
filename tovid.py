@@ -58,12 +58,10 @@ f_success = (True, 'Lexer')
 len_code = len(source_code)-1
 num_line = 1
 num_char = -1
-char = ''
-lexeme = ''
-
 current_lex_id = 1
 current_line = 1
-len_table_of_symb = len(table_of_symb)
+char = ''
+lexeme = ''
 
 params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
                 'string': 'keyword', 'boolean': 'keyword'}
@@ -232,6 +230,7 @@ def index_id_const(state, lexeme):
 # -------------------------------------------------------
 # syntax and semantic
 # -------------------------------------------------------
+len_table_of_symb = len(table_of_symb)
 
 
 def parse_program():

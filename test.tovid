@@ -1,1 +1,2 @@
 const int m := 10
+var f := 3 / 0
