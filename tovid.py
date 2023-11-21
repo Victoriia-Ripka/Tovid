@@ -894,21 +894,25 @@ from stack import Stack
 
 class PSM():             # Postfix Stack Machine
   def __init__(self):
-    self.tableOfId    = {}
+    self.tableOfId = {}
     self.tableOfLabel = {}
     self.tableOfConst = {}
-    self.postfixCode   = []
-    self.mapDebug     = {}
+    self.postfixCode = []
+    self.mapDebug = {}
     self.numLine = 0
     self.fileName = ""
     self.file = ""
-    self.slt      = ""
-    self.headSection = {"VarDecl":".vars(", "LblDecl":".labels(", "ConstDecl":".constants(", "Code":".code("}
-    self.errMsg = {1:"неочікуваний заголовок", 2:"тут очікувався хоч один порожній рядок", 3:"тут очікувався заголовок секції", 4:"очікувалось два елемента в рядку", 8:"неініційована змінна" }
+    self.slt = ""
+    self.headSection = {"VarDecl": ".vars(", "LblDecl": ".labels(", "ConstDecl": ".constants(", "Code": ".code("}
+    self.errMsg = {1: "неочікуваний заголовок",
+                   2: "тут очікувався хоч один порожній рядок",
+                   3: "тут очікувався заголовок секції",
+                   4: "очікувалось два елемента в рядку",
+                   8: "неініційована змінна"
+                   }
     self.stack = Stack()
     self.numInstr = 0
     self.maxNumbInstr = 0
-
 
   def loadPostfixFile(self, fileName):
     try:
@@ -919,13 +923,9 @@ class PSM():             # Postfix Stack Machine
     except PSMExcept as e:
       print(f"PSM.loadPostfixFile ERROR: у рядку {self.numLine}, код винятку - {e.msg}, msg = {self.errMsg[e.msg]}")
 
-
   def parsePostfixProgram(self):
-      # print("--------- header ")
-      self.parseHeader(".target: Postfix Machine")
+      self.parseHeader("package")
       # print(f"have header1 {self.numLine}")
-      self.parseHeader(".version: 0.2")
-      # print(f"have header2 {self.numLine}")
 
       self.parseSection("VarDecl")
       # print(f"have var {self.numLine}")
