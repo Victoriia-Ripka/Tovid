@@ -104,7 +104,7 @@ def processing():
                     print('{0:<3d} {1:<10s} {2:<10s} {3:<2d} '.format(num_line, lexeme, token, index[1]))
                 table_of_symb[len(table_of_symb)+1] = (num_line, lexeme, token, index)
             else:  # якщо keyword
-                print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
+                # print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
                 table_of_symb[len(table_of_symb)+1] = (num_line, lexeme, token, '')
             lexeme = ''
             num_char = put_char_back(num_char)  # зiрочка
@@ -114,7 +114,7 @@ def processing():
         else:
             lexeme += char
             token = get_token(state, lexeme)
-            print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
+            # print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
             table_of_symb[len(table_of_symb) + 1] = (num_line, lexeme, token, '')
             lexeme = ''
             state = init_state
@@ -209,17 +209,20 @@ def index_id_const(state, lexeme):
 lex()
 
 
-print('\n', '-' * 30)
-print('table_of_symb:{0}'.format(table_of_symb))
-print('-' * 30)
-print('table_of_id:{0}'.format(table_of_id))
-print('-' * 30)
-print('table_of_const:{0}'.format(table_of_const))
-print('-' * 30, '\n')
-
+# print('\n', '-' * 30)
+# print('table_of_symb:{0}'.format(table_of_symb))
+# print('-' * 30)
+# print('table_of_id:{0}'.format(table_of_id))
+# print('-' * 30)
+# print('table_of_const:{0}'.format(table_of_const))
+# print('-' * 30, '\n')
 
 
 # -------------------------------------------------------
+# syntax and semantic
+# -------------------------------------------------------
+
+
 num_row_s = 1
 num_line_s = 1
 len_table_of_symb = len(table_of_symb)
@@ -229,7 +232,6 @@ params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
-# доповнювати
 def parse_program():
     global num_row_s, num_line_s
     try:
@@ -264,30 +266,24 @@ def parse_program():
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[91mАварiйне завершення програми з кодом {0}\033[0m".format(e))
 
 
-# done
 def parse_func():
     global num_row_s, num_line_s, table_of_var
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    # не потрібно змінити порядок двох наступних рідків?
     parse_identlist(lex)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token('(', tok, num_row_s)
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    # parse_params(lex, tok)
-    # num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token(')', tok, num_row_s)
     parse_token('{', tok, num_row_s)
     parse_statementlist()
     parse_token('}', tok, num_row_s)
-
     # скоуп закінчився. Очищаємо змінні та параметри функції
     # table_of_var.clear()
     # current_func_params.clear()
     # Уже ні :)))
 
 
-# done
 # def parse_params(lexeme, token):
 #     global num_row_s, num_line_s, current_func_params
 #     if lexeme != ')':
@@ -311,14 +307,13 @@ def parse_func():
 #     num_line_s += 1
 
 
-# done
 def parse_token(lexeme, token, id) :
     global num_row_s, num_line_s
     if num_row_s <= len_table_of_symb:
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
         num_row_s += 1
         if (lex, tok) == (lexeme, token):
-            print('parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
+            # print('parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
             return True
         else:
             fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok, lexeme, token))
@@ -327,7 +322,6 @@ def parse_token(lexeme, token, id) :
         fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
 
 
-# done
 def parse_identlist(lexeme):
     global num_row_s
     if lexeme in table_of_id.keys():
@@ -337,7 +331,6 @@ def parse_identlist(lexeme):
         fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
 
 
-# done?
 def parse_comment(comment_line):
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -355,7 +348,6 @@ def parse_comment(comment_line):
 
 # зарарз працює як тіло функції/іф/фор.
 # пофіксити, щоб можна було без вкладеності парсити теж (не чекати на '}')
-# fix
 def parse_statementlist():
     global num_row_s, num_line_s
 
@@ -384,7 +376,6 @@ def parse_statementlist():
         num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
 
-# done
 def parse_declared_var(lexeme, token):
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -405,9 +396,8 @@ def parse_declared_var(lexeme, token):
         fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
 
 
-# done
 def parse_scanf_print(lexeme, token):
-    global num_line_s, num_row_s
+    global num_line_s, num_row_s, table_of_var
     num_row_s += 1
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
     parse_token('(', tok, num_row_s)
@@ -420,6 +410,8 @@ def parse_scanf_print(lexeme, token):
                 if lex in table_of_id.keys():
                     num_row_s += 1
                     num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                    # table_of_var[lex] = (index, old_type, 'assigned')
+                    # в таблиці змінних зробити присвоєння до змінної таке, що було отримано зц скану
                 else:
                     fail_parse('очікувався параметр', (num_line_s, lex, tok))
                 if lex == ',':
@@ -451,7 +443,6 @@ def parse_scanf_print(lexeme, token):
     parse_token(')', tok, num_row_s)
 
 
-# done
 def parse_declarlist():
     global num_row_s
     datatype_is_declared = False
@@ -469,7 +460,7 @@ def parse_declarlist():
     else:
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
-        if lex in table_of_var.keys():
+        if lex in table_of_var.keys() or lex in table_of_named_const.keys():
             fail_parse('повторне оголошення змінної',(num_line_s, lex, tok))
         current_id = lex
         num_row_s += 1
@@ -510,7 +501,6 @@ def parse_declarlist():
 
 
 # тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
-# fix
 def parse_expression():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -670,7 +660,6 @@ def parse_factor():
     return factor_type
 
 
-# done
 def parse_return():
     global num_row_s, num_line_s
     num_row_s += 1
@@ -682,7 +671,6 @@ def parse_return():
         fail_parse("return", (num_line_s, tok, lex))
 
 
-# done
 def parse_package():
     global num_row_s, num_line_s
     num_row_s += 1
@@ -690,7 +678,6 @@ def parse_package():
     parse_identlist(lex)
 
 
-# done
 def parse_import():
     global num_row_s, num_line_s
     num_row_s += 1
@@ -701,7 +688,6 @@ def parse_import():
         fail_parse('очікувався рядок', (num_line_s, lex, tok))
 
 
-# fix
 # def parse_bool_expr():
 #     global num_row_s, num_line_s
 #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -719,7 +705,6 @@ def parse_import():
 #     num_line_s, lex, tok = get_current_lexeme(num_row_s)
 
 
-# fix
 def parse_if():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -742,7 +727,6 @@ def parse_if():
         fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
 
 
-# fix
 def parse_for():
     global num_row_s, num_line_s
     num_line_s, lex, tok = get_current_lexeme(num_row_s)
@@ -775,13 +759,11 @@ def parse_for():
     parse_token('}', 'brack_op', '')
 
 
-# done
 def get_current_lexeme (num_row) :
     num_line, lexeme, token, _ = table_of_symb[num_row]
     return num_line, lexeme, token
 
 
-# можна доповнювати
 def fail_parse(str, tuple):
     if str == 'неочiкуваний кiнець програми':
         (lexeme, token, num_row) = tuple
@@ -899,3 +881,8 @@ print('table_of_var: {0}'.format(table_of_var))
 print('-' * 30)
 print('table_of_named_const: {0}'.format(table_of_named_const))
 print('-' * 30)
+
+# -------------------------------------------------------
+# code generation
+# -------------------------------------------------------
+

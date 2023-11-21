@@ -7,7 +7,7 @@ func sum() {
 }
 // some
 func main() {
-	var int a
+	var int doubleA
 	var float f
 	var boolean b
 	var complex c1 := 2i
@@ -15,21 +15,20 @@ func main() {
 	var complex c3
 	const int five := 5
 	const done := "Done!"
-	a := 1
-	scanf(a)
-	f := (a^2) + 3/five
-	b := (a+a) > f
-	print(a, f, b)
+	doubleA := 1
+	scanf(doubleA)
+	f := (doubleA^2) + 3/five
+	b := (doubleA+doubleA) > f
+	print(doubleA, f, b)
 
-	for d := 0; a <= five; a++ {
-        if a > b == 0 {
+	for d := 0; d <= five; d++ {
+        if d > b == 0 {
            	print(b)
         }
 		else {
-      	 	print(a)
+      	 	print(d)
         }
     }
 
 }
 
-sum()
