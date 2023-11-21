@@ -61,6 +61,16 @@ num_char = -1
 char = ''
 lexeme = ''
 
+current_lex_id = 1
+current_line = 1
+len_table_of_symb = len(table_of_symb)
+
+params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
+                'string': 'keyword', 'boolean': 'keyword'}
+
+allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
+
+
 
 def lex():
     global state, num_line, char, lexeme, num_char, f_success
@@ -210,8 +220,6 @@ def index_id_const(state, lexeme):
 
 
 # lex()
-
-
 # print('\n', '-' * 30)
 # print('table_of_symb:{0}'.format(table_of_symb))
 # print('-' * 30)
@@ -226,26 +234,17 @@ def index_id_const(state, lexeme):
 # -------------------------------------------------------
 
 
-num_row_s = 1
-num_line_s = 1
-len_table_of_symb = len(table_of_symb)
-
-params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
-                'string': 'keyword', 'boolean': 'keyword'}
-
-allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
-
 def parse_program():
-    global num_row_s, num_line_s
+    global current_lex_id, current_line
     try:
-        while num_row_s < len_table_of_symb:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        while current_lex_id < len_table_of_symb:
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
             if lex == 'func':
                 parse_func()
             elif lex == 'import':
                 parse_import()
             elif lex == '//' or lex == '/*':
-                parse_comment(num_line_s)
+                parse_comment(current_line)
             elif lex == 'package':
                 parse_package()
             elif lex == 'if':
@@ -260,7 +259,7 @@ def parse_program():
                 if lex in table_of_var.keys() or lex in table_of_named_const.keys():
                     parse_declared_var(lex, tok)  # переприсвоєння (якщо const то видасть помилку всередині)
                 else:
-                    fail_parse('оголошення змінної чи константи без var/const', (num_line_s, lex, tok))
+                    fail_parse('оголошення змінної чи константи без var/const', (current_line, lex, tok))
             else:
                 parse_statementlist()
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
@@ -270,17 +269,17 @@ def parse_program():
 
 
 def parse_func():
-    global num_row_s, num_line_s, table_of_var
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line, table_of_var
+    current_lex_id += 1
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     parse_identlist(lex)
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    parse_token('(', tok, num_row_s)
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    parse_token(')', tok, num_row_s)
-    parse_token('{', tok, num_row_s)
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
+    parse_token('(', tok, current_lex_id)
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
+    parse_token(')', tok, current_lex_id)
+    parse_token('{', tok, current_lex_id)
     parse_statementlist()
-    parse_token('}', tok, num_row_s)
+    parse_token('}', tok, current_lex_id)
     # скоуп закінчився. Очищаємо змінні та параметри функції
     # table_of_var.clear()
     # current_func_params.clear()
@@ -311,53 +310,53 @@ def parse_func():
 
 
 def parse_token(lexeme, token, id) :
-    global num_row_s, num_line_s
-    if num_row_s <= len_table_of_symb:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        num_row_s += 1
+    global current_lex_id, current_line
+    if current_lex_id <= len_table_of_symb:
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
+        current_lex_id += 1
         if (lex, tok) == (lexeme, token):
             # print('parseToken: В рядку {0} токен {1}'.format(num_line_s, (lexeme, token)))
             return True
         else:
-            fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok, lexeme, token))
+            fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok, lexeme, token))
             return False
     else:
-        fail_parse("неочiкуваний кiнець програми", (lexeme, token, num_row_s))
+        fail_parse("неочiкуваний кiнець програми", (lexeme, token, current_lex_id))
 
 
 def parse_identlist(lexeme):
-    global num_row_s
+    global current_lex_id
     if lexeme in table_of_id.keys():
-        num_row_s += 1
+        current_lex_id += 1
     else:
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        num_line_s, lex, tok = get_current_lexeme(current_lex_id)
         fail_parse('очікувався ідентифікатор', (num_line_s, lex, tok))
 
 
 def parse_comment(comment_line):
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if lex == '//':
-        while num_line_s == comment_line:
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        num_row_s -= 1
+        while current_line == comment_line:
+            current_lex_id += 1
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
+        current_lex_id -= 1
     elif lex == '/*':
         while lex != '*/':
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    num_row_s += 1
+            current_lex_id += 1
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
+    current_lex_id += 1
 
 
 # зарарз працює як тіло функції/іф/фор.
 # пофіксити, щоб можна було без вкладеності парсити теж (не чекати на '}')
 def parse_statementlist():
-    global num_row_s, num_line_s
+    global current_lex_id, current_line
 
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     while lex != '}':
         if lex == '//' or lex == '/*':
-            parse_comment(num_line_s)
+            parse_comment(current_line)
         elif lex == 'if':
             parse_if()
         elif lex == 'for':
@@ -372,21 +371,21 @@ def parse_statementlist():
             if lex in table_of_var.keys() or lex in table_of_named_const.keys():
                 parse_declared_var(lex, tok)
             else:
-                fail_parse('оголошення змінної чи константи без var/const', (num_line_s, lex, tok))
+                fail_parse('оголошення змінної чи константи без var/const', (current_line, lex, tok))
         else:
             # print("непередбачена логіка у функції parse_statementlist()")
-            fail_parse('return', (num_line_s, lex, tok))
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            fail_parse('return', (current_line, lex, tok))
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
 
 
 def parse_declared_var(lexeme, token):
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    ident_line = num_line_s
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
+    ident_line = current_line
 
     if lexeme in table_of_var.keys():
-        num_row_s += 1
-        parse_token(':=', 'assign_op', num_row_s)
+        current_lex_id += 1
+        parse_token(':=', 'assign_op', current_lex_id)
         new_type = parse_expression()
         index, old_type, _ = table_of_var[lexeme]
         if new_type == old_type:
@@ -394,69 +393,69 @@ def parse_declared_var(lexeme, token):
         else:
             fail_parse('значення змінної не відповідає оголошеному типу', (ident_line, lexeme, token))
     elif lexeme in table_of_named_const.keys():
-        fail_parse('переприсвоєння значення константі', (num_line_s, lex, tok))
+        fail_parse('переприсвоєння значення константі', (current_line, lex, tok))
     else:
-        fail_parse("не оголошена змінна", (num_line_s, lex, tok, ))
+        fail_parse("не оголошена змінна", (current_line, lex, tok,))
 
 
 def parse_scanf_print(lexeme, token):
-    global num_line_s, num_row_s, table_of_var
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
-    parse_token('(', tok, num_row_s)
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_line, current_lex_id, table_of_var
+    current_lex_id += 1
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
+    parse_token('(', tok, current_lex_id)
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if lex != ')':
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
+        _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
         while lex != ')':
             if lexeme == 'scanf':
                 if lex in table_of_id.keys():
-                    num_row_s += 1
-                    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                    current_lex_id += 1
+                    current_line, lex, tok = get_current_lexeme(current_lex_id)
                     # table_of_var[lex] = (index, old_type, 'assigned')
                     # в таблиці змінних зробити присвоєння до змінної таке, що було отримано зц скану
                 else:
-                    fail_parse('очікувався параметр', (num_line_s, lex, tok))
+                    fail_parse('очікувався параметр', (current_line, lex, tok))
                 if lex == ',':
-                    _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
+                    _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
                     if lex1 in table_of_id.keys():
-                        num_row_s += 1
-                        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                        current_lex_id += 1
+                        current_line, lex, tok = get_current_lexeme(current_lex_id)
                     else:
-                        fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
+                        fail_parse('очікувався параметр', (current_line, lex1, tok1))
             else:  # elif lexeme == print
                 if lex in table_of_var.keys() or lex in table_of_named_const.keys() or tok in params_types.keys():
                     if lex in table_of_var.keys():
                         if table_of_var[lex][2] == 'undefined':
-                            fail_parse('використання undefined змінної', (num_line_s, lex, tok))
-                    num_row_s += 1
-                    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                            fail_parse('використання undefined змінної', (current_line, lex, tok))
+                    current_lex_id += 1
+                    current_line, lex, tok = get_current_lexeme(current_lex_id)
                 else:
-                    fail_parse('очікувався параметр', (num_line_s, lex, tok))
+                    fail_parse('очікувався параметр', (current_line, lex, tok))
                 if lex == ',' or lex == '+':
-                    _, lex1, tok1 = get_current_lexeme(num_row_s + 1)
+                    _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
                     if lex1 in table_of_var.keys() or lex1 in table_of_named_const.keys() or tok1 in params_types.keys():
                         if lex in table_of_var.keys():
                             if table_of_var[lex1][2] == 'undefined':
-                                fail_parse('використання undefined змінної', (num_line_s, lex1, tok1))
-                        num_row_s += 1
-                        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                                fail_parse('використання undefined змінної', (current_line, lex1, tok1))
+                        current_lex_id += 1
+                        current_line, lex, tok = get_current_lexeme(current_lex_id)
                     else:
-                        fail_parse('очікувався параметр', (num_line_s, lex1, tok1))
-    parse_token(')', tok, num_row_s)
+                        fail_parse('очікувався параметр', (current_line, lex1, tok1))
+    parse_token(')', tok, current_lex_id)
 
 
 def parse_declarlist():
-    global num_row_s
+    global current_lex_id
     datatype_is_declared = False
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    num_line_s, lex, tok = get_current_lexeme(current_lex_id)
     keyword = lex
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    current_lex_id += 1
+    num_line_s, lex, tok = get_current_lexeme(current_lex_id)
     if lex in allowed_data_types:
         declared_datatype = lex
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_lex_id += 1
+        num_line_s, lex, tok = get_current_lexeme(current_lex_id)
         datatype_is_declared = True
     elif lex in table_of_id.keys():
         datatype_is_declared = False
@@ -466,11 +465,11 @@ def parse_declarlist():
         if lex in table_of_var.keys() or lex in table_of_named_const.keys():
             fail_parse('повторне оголошення змінної',(num_line_s, lex, tok))
         current_id = lex
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_lex_id += 1
+        num_line_s, lex, tok = get_current_lexeme(current_lex_id)
         index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_named_const) + 1
         if tok == 'assign_op':
-            num_row_s += 1
+            current_lex_id += 1
             value_datatype = parse_expression()
             if datatype_is_declared:
                 if declared_datatype == value_datatype:
@@ -487,12 +486,12 @@ def parse_declarlist():
                     table_of_named_const[current_id] = (index, value_datatype)
         else:
             if keyword == 'const':
-                num_row_s -= 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                current_lex_id -= 1
+                num_line_s, lex, tok = get_current_lexeme(current_lex_id)
                 fail_parse('не присвоєно значення константі', (num_line_s, lex, tok))
             if not datatype_is_declared:
-                num_row_s -= 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                current_lex_id -= 1
+                num_line_s, lex, tok = get_current_lexeme(current_lex_id)
                 fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
             else:
                 if keyword == 'var':
@@ -505,17 +504,17 @@ def parse_declarlist():
 
 # тут якось потрібно слідкувати щоб була послідовність між змінними і знаками (а + м) * 12 > 3
 def parse_expression():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
 
     if lex in bool_expr_results:
         left_type = 'boolean'
-        num_row_s += 1
+        current_lex_id += 1
         finish = True
     else:
         left_type = parse_arithm_expression()
         try:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
         except KeyError:
             finish = True
         else:
@@ -524,27 +523,27 @@ def parse_expression():
 
     while not finish:
         try:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
         except KeyError:
             finish = True
         else:
             if tok == 'rel_op':
-                num_row_s += 1
+                current_lex_id += 1
                 right_type = parse_arithm_expression()
                 if not (left_type == 'string' or right_type == 'string' or left_type == 'complex' or right_type == 'complex'):
                     result_type = 'boolean'
                 else:
-                    fail_parse('неможливо виконати порівняння', (num_line_s, left_type, right_type))
+                    fail_parse('неможливо виконати порівняння', (current_line, left_type, right_type))
             else:
                 finish = True
     return result_type
 
 
 def parse_arithm_expression():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if tok == 'add_op':
-        num_row_s += 1
+        current_lex_id += 1
 
     left_type = parse_term()
     result_type = left_type
@@ -552,19 +551,19 @@ def parse_arithm_expression():
 
     while not finish:
         try:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
         except KeyError:
             finish = True
         else:
             if tok == 'add_op':
-                num_row_s += 1
+                current_lex_id += 1
                 right_type = parse_term()
                 if left_type == right_type and left_type == 'int':
                     result_type = left_type
                 elif left_type == 'boolean' or right_type == 'boolean':
-                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                    fail_parse('невідповідність типів', (current_line, left_type, right_type))
                 elif left_type == 'string' or right_type == 'string':
-                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+                    fail_parse('арифметична дія над стрічкою', (current_line, lex, tok))
                 elif left_type == 'complex' or right_type == 'complex':
                     result_type = 'complex'
                 else:
@@ -575,27 +574,27 @@ def parse_arithm_expression():
 
 
 def parse_term():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     left_type = parse_chunk()
     result_type = left_type
     finish = False
 
     while not finish:
         try:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
         except KeyError:
             finish = True
         else:
             if tok == 'mult_op':
                 operator = lex
-                num_row_s += 1
-                num_line_s, lex, tok = get_current_lexeme(num_row_s)
+                current_lex_id += 1
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
                 right_type = parse_chunk()
                 if left_type == 'boolean' or right_type == 'boolean':
-                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                    fail_parse('невідповідність типів', (current_line, left_type, right_type))
                 elif left_type == 'string' or right_type == 'string':
-                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+                    fail_parse('арифметична дія над стрічкою', (current_line, lex, tok))
 
                 if operator == '/':
                     result_type = 'float'
@@ -612,25 +611,25 @@ def parse_term():
 
 
 def parse_chunk():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     left_type = parse_factor()
     result_type = left_type
     finish = False
 
     while not finish:
         try:
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
         except KeyError:
             finish = True
         else:
             if tok == 'pow_op':
-                num_row_s += 1
+                current_lex_id += 1
                 right_type = parse_factor()
                 if left_type == 'boolean' or right_type == 'boolean':
-                    fail_parse('невідповідність типів', (num_line_s, left_type, right_type))
+                    fail_parse('невідповідність типів', (current_line, left_type, right_type))
                 elif left_type == 'string' or right_type == 'string':
-                    fail_parse('арифметична дія над стрічкою', (num_line_s, lex, tok))
+                    fail_parse('арифметична дія над стрічкою', (current_line, lex, tok))
                 result_type = 'float'
             else:
                 finish = True
@@ -638,12 +637,12 @@ def parse_chunk():
 
 
 def parse_factor():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     factor_type = ''
     if lex in table_of_var.keys():
         if table_of_var[lex][2] == 'undefined':
-            fail_parse('використання undefined змінної', (num_line_s, lex, tok))
+            fail_parse('використання undefined змінної', (current_line, lex, tok))
         factor_type = table_of_var[lex][1]
     elif lex in table_of_named_const.keys():
         factor_type = table_of_named_const[lex][1]
@@ -654,41 +653,41 @@ def parse_factor():
     elif lex in bool_expr_results:
         factor_type = 'boolean'
     elif lex == '(':
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_lex_id += 1
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
         factor_type = parse_expression()
         parse_token(')', 'brack_op', '')
-        num_row_s -= 1
-    num_row_s += 1
+        current_lex_id -= 1
+    current_lex_id += 1
     return factor_type
 
 
 def parse_return():
-    global num_row_s, num_line_s
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_lex_id += 1
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if lex in table_of_id.keys() or tok in allowed_data_types or lex == 'iota' or lex == 'nil' or lex == 'true' or lex == 'false':
-        num_row_s += 1
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_lex_id += 1
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
     else:
-        fail_parse("return", (num_line_s, tok, lex))
+        fail_parse("return", (current_line, tok, lex))
 
 
 def parse_package():
-    global num_row_s, num_line_s
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_lex_id += 1
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     parse_identlist(lex)
 
 
 def parse_import():
-    global num_row_s, num_line_s
-    num_row_s += 1
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_lex_id += 1
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if tok == 'string':
-        parse_token(lex, tok, num_line_s)
+        parse_token(lex, tok, current_line)
     else:
-        fail_parse('очікувався рядок', (num_line_s, lex, tok))
+        fail_parse('очікувався рядок', (current_line, lex, tok))
 
 
 # def parse_bool_expr():
@@ -709,54 +708,54 @@ def parse_import():
 
 
 def parse_if():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     if lex == 'if' and tok == 'keyword':
-        num_row_s += 1
+        current_lex_id += 1
         if parse_expression() != 'boolean':
-            fail_parse('очікувався булевий вираз', num_line_s)
+            fail_parse('очікувався булевий вираз', current_line)
         parse_token('{', 'brack_op','')
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
         parse_statementlist()
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
         parse_token('}','brack_op','')
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
         if lex == 'else' and tok == 'keyword':
             parse_token('else', 'keyword','')
             parse_token('{', 'brack_op','')
             parse_statementlist()
             parse_token('}', 'brack_op','')
     else:
-        fail_parse('невiдповiднiсть токенiв', (num_line_s, lex, tok))
+        fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok))
 
 
 def parse_for():
-    global num_row_s, num_line_s
-    num_line_s, lex, tok = get_current_lexeme(num_row_s)
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
     back = 0
     i = 0
     while lex != '{':
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
-        num_row_s += 1
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
+        current_lex_id += 1
         back+=1
         if lex == ';':
             i+=1
-    num_row_s -= back
+    current_lex_id -= back
     if i == 2:
         parse_declarlist()
         parse_token(';', 'punc', '')
         if parse_expression() != 'boolean':
-            fail_parse('очікувався булевий вираз', num_line_s)
+            fail_parse('очікувався булевий вираз', current_line)
         parse_token(';', 'punc', '')
         parse_arithm_expression()
-        num_line_s, lex, tok = get_current_lexeme(num_row_s)
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
         while lex != '{':
-            num_row_s += 1
-            num_line_s, lex, tok = get_current_lexeme(num_row_s)
+            current_lex_id += 1
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
     else:
-        num_row_s += 1
+        current_lex_id += 1
         if parse_expression() != 'boolean':
-            fail_parse('очікувався булевий вираз', num_line_s)
+            fail_parse('очікувався булевий вираз', current_line)
     parse_token('{', 'brack_op', '')
     parse_statementlist()
     parse_token('}', 'brack_op', '')
@@ -876,8 +875,6 @@ def fail_parse(str, tuple):
 
 
 # parse_program()
-#
-#
 # print('\033[0m')
 # print('-' * 30)
 # print('table_of_var: {0}'.format(table_of_var))
@@ -890,298 +887,27 @@ def fail_parse(str, tuple):
 # code generation
 # -------------------------------------------------------
 
-import re
-from stack import Stack
+
+def serv():
+    pass
 
 
-class PSM():             # Postfix Stack Machine
-  def __init__(self):
-    self.tableOfId = {}
-    self.tableOfLabel = {}
-    self.tableOfConst = {}
-    self.postfixCode = []
-    self.mapDebug = {}
-    self.numLine = 0
-    self.fileName = ""
-    self.file = ""
-    self.slt = ""
-    self.headSection = {"VarDecl": ".vars(", "LblDecl": ".labels(", "ConstDecl": ".constants(", "Code": ".code("}
-    self.errMsg = {1: "неочікуваний заголовок",
-                   2: "тут очікувався хоч один порожній рядок",
-                   3: "тут очікувався заголовок секції",
-                   4: "очікувалось два елемента в рядку",
-                   8: "неініційована змінна"
-                   }
-    self.stack = Stack()
-    self.numInstr = 0
-    self.maxNumbInstr = 0
-
-  def loadPostfixFile(self, fileName):
-    try:
-      self.fileName = fileName + ".tovid"
-      self.file = open(self.fileName, 'r')
-      self.parsePostfixProgram()
-      self.file.close()
-    except PSMExcept as e:
-      print(f"PSM.loadPostfixFile ERROR: у рядку {self.numLine}, код винятку - {e.msg}, msg = {self.errMsg[e.msg]}")
-
-  def parsePostfixProgram(self):
-      self.parseHeader("package")
-      # print(f"have header1 {self.numLine}")
-
-      self.parseSection("VarDecl")
-      # print(f"have var {self.numLine}")
-
-      self.parseSection("LblDecl")
-      # print("have lbl ")
-
-      self.parseSection("ConstDecl")
-      # print("have const ")
-
-      self.parseSection("Code")  # mapDebug:: numInstr -> numLine
-      # print("have code ")
+def save_postfix_code(file_name):
+    pass
 
 
-  def parseHeader(self, header):
-      if self.file.readline().rstrip() != header:
-          raise PSMExcept(1)
-      self.numLine += 1
-
-
-  def parseSection(self, section):
-      # print("============Section: "+section)
-      headerSect = self.headSection[section]
-      s = self.file.readline().partition("#")[0].strip()
-      self.numLine += 1
-      # один порожній рядок обов'язковий
-      if s != "":
-          raise PMExcept(2)
-      # інші (можливі) порожні рядки та заголовок секції
-      F = True
-      while F:
-          s = self.file.readline().partition("#")[0].strip()
-          # print("s=",s)
-          self.numLine += 1
-          if s == "":
-              pass  # self.numLine += 1
-          elif s == headerSect:
-              # self.numLine += 1
-              F = False
-          else:
-              raise PSMExcept(3)
-      # формування відповідної таблиці (можливі і порожні рядки)
-      F = True
-      while F:
-          s = self.file.readline().partition("#")[0].strip()
-          self.numLine += 1
-          if s == "":
-              pass
-          elif s == ")":  # кінець секції
-              F = False
-          else:
-              self.slt = s
-              self.procSection(section)
-
-
-  def procSection(self, section):
-      list = self.slt.split()
-      if len(list) != 2:
-          raise PSMExcept(4)
-      else:
-          item1 = list[0]
-          item2 = list[1]
-          if section == "VarDecl":
-              table = self.tableOfId
-              indx = len(table) + 1
-              table[item1] = (indx, item2, 'val_undef')
-
-          if section == "LblDecl":
-              table = self.tableOfLabel
-              indx = len(table) + 1
-              table[item1] = item2
-
-          if section == "ConstDecl":
-              table = self.tableOfConst
-              indx = len(table) + 1
-              if item2 == "int":
-                  val = int(item1)
-              elif item2 == "float":
-                  val = float(item1)
-              elif item2 == "bool":
-                  val = item1
-              table[item1] = (indx, item2, val)
-
-          if section == "Code":
-              indx = len(self.postfixCode)
-              self.postfixCode.append((item1, item2))
-              instrNum = len(self.postfixCode) - 1
-              self.mapDebug[instrNum] = self.numLine
-
-
-  def postfixExec(self):
-      "Виконує postfixCode"
-      print('postfixExec:')
-      self.maxNumbInstr = len(self.postfixCode)
-      try:
-          while self.numInstr < self.maxNumbInstr:
-              self.stack.print()
-              lex, tok = self.postfixCode[self.numInstr]
-              if tok in ('int', 'float', 'l-val', 'r-val', 'label', 'bool'):
-                  self.stack.push((lex, tok))
-                  self.numInstr = self.numInstr + 1
-              elif tok in ('jump', 'jf', 'colon'):
-                  self.doJumps(lex, tok)
-              elif tok == 'out_op':
-                  id, _ = self.stack.pop()
-                  self.numInstr = self.numInstr + 1
-                  print(f'-------------- OUT: {id}={self.tableOfId[id][2]}')
-              else:
-                  print(f'-=-=-=========({lex},{tok})  numInstr={self.numInstr}')
-                  self.doIt(lex, tok)
-                  self.numInstr = self.numInstr + 1
-          self.stack.print()
-      except PSMExcept as e:
-          # Повідомити про факт виявлення помилки
-          print('RunTime: Аварійне завершення програми з кодом {0}'.format(e))
-
-
-  def doJumps(self, lex, tok):
-      ni = self.numInstr
-      if tok == 'jump':
-          lexLbl, _ = self.stack.pop()  # зняти з вершини стека мітку
-          self.numInstr = int(self.tableOfLabel[lexLbl])  # номер наступної інструкції = значення мітки
-      elif tok == 'colon':
-          _, _ = self.stack.pop()  # зняти з вершини стека
-          self.numInstr = self.numInstr + 1  # непотрібну нам мітку
-      elif tok == 'jf':
-          lexLbl, _ = self.stack.pop()  # зняти з вершини стека мітку
-          valBoolExpr, _ = self.stack.pop()  # зняти з вершини стека значення BoolExpr
-          if valBoolExpr == 'false':
-              self.numInstr = int(self.tableOfLabel[lexLbl])
-          else:
-              self.numInstr = self.numInstr + 1
-      print(f'+=+=+=========({lex},{tok})  numInstr={ni} nextNumInstr={self.numInstr}')
-
-
-  def doIt(self, lex, tok):
-      # зняти з вершини стека ідентифікатор (правий операнд)
-      # self.stack.print()
-      (lexR, tokR) = self.stack.pop()
-      # зняти з вершини стека запис (лівий операнд)
-      (lexL, tokL) = self.stack.pop()
-
-      if (lex, tok) == (':=', 'assign_op'):
-          tokL = self.tableOfId[lexL][1]
-          if tokL != tokR:
-              print(f'(lexR,tokR)={(lexR, tokR)}\n(lexL,tokL)={(lexL, tokL)}')
-              raise PSMExcept(7)  # типи змінної відрізняється від типу значення
-          else:
-              # виконати операцію:
-              # оновлюємо запис у таблиці ідентифікаторів
-              # ідентифікатор/змінна  =
-              #              (index - не змінився,
-              #               тип - як у правого операнда (вони однакові),
-              #               значення - як у правого операнда)
-              self.tableOfId[lexL] = (self.tableOfId[lexL][0], tokR, get_value(lexR, tokR))
-      else:
-          self.processingArthBoolOp((lexL, tokL), lex, (lexR, tokR))
-
-
-  def processingArthBoolOp(self, lexTokL, arthBoolOp, lexTokR):
-      (lexL, tokL) = lexTokL
-      (lexR, tokR) = lexTokR
-      typeL, valL = self.getValTypeOperand(lexL, tokL)
-      typeR, valR = self.getValTypeOperand(lexR, tokR)
-      self.applyOperator((lexL, typeL, valL), arthBoolOp, (lexR, typeR, valR))
-
-
-  def getValTypeOperand(self, lex, tok):
-      if tok == "r-val":
-          if self.tableOfId[lex][2] == 'val_undef':
-              raise PMExcept(8)  # 'неініційована змінна', (lexL,tableOfId[lexL], (lexL,tokL
-          else:
-              type, val = (self.tableOfId[lex][1], self.tableOfId[lex][2])
-      elif tok == 'int':
-          val = int(lex)
-          type = tok
-      elif tok == 'float':
-          val = float(lex)
-          type = tok
-      elif tok == 'bool':
-          val = lex
-          type = tok
-      return (type, val)
-
-
-  def applyOperator(self, lexTypeValL, arthBoolOp, lexTypeValR):
-      (lexL, typeL, valL) = lexTypeValL
-      (lexR, typeR, valR) = lexTypeValR
-      if typeL != typeR:
-          raise PMExcept(9)  # типи операндів відрізняються
-      elif arthBoolOp == '+':
-          value = valL + valR
-      elif arthBoolOp == '-':
-          value = valL - valR
-      elif arthBoolOp == '*':
-          value = valL * valR
-      elif arthBoolOp == '/' and valR == 0:
-          raise PMExcept(10)  # ділення на нуль
-      elif arthBoolOp == '/' and typeL == 'float':
-          value = valL / valR
-      elif arthBoolOp == '/' and typeL == 'int':
-          value = int(valL / valR)
-      elif arthBoolOp == '<':
-          value = str(valL < valR).lower()
-      elif arthBoolOp == '<=':
-          value = str(valL <= valR).lower()
-      elif arthBoolOp == '>':
-          value = str(valL > valR).lower()
-      elif arthBoolOp == '>=':
-          value = str(valL >= valR).lower()
-      elif arthBoolOp == '=':
-          value = str(valL == valR).lower()
-      elif arthBoolOp == '<>':
-          value = str(valL != valR).lower()
-      else:
-          pass
-      # покласти результат на стек
-      if arthBoolOp in ('<', '<=', '>', '>=', '=', '<>'):
-          self.stack.push((str(value), 'bool'))
-      else:
-          self.stack.push((str(value), typeL))
-
-
-class PSMExcept(Exception):
-  def __init__(self, msg):
-    self.msg = msg
-
-
-def get_value(lex, tok):
-      if tok == 'float':
-          return float(lex)
-      elif tok == 'int':
-          return int(lex)
-      elif tok == 'bool':
-          return lex
-
-
-def compile_to_postfix():
+def compile_to_postfix(file_name):
   global len_table_of_symb, f_success
   print('compileToPostfix: lexer Start Up\n')
   f_success = lex()
   if f_success == (True, 'Lexer'):
-    print('compileToPostfix: Start Up compiler = parser + codeGenerator\n')
+    print('compileToPostfix: compiler Start Up: parser + codeGenerator\n')
     f_success = (False, 'codeGeneration')
     f_success = parse_program()
     if f_success == (True, 'codeGeneration'):
       serv()
-      savePostfixCode()
+      save_postfix_code(file_name)
   return f_success
 
 
-compile_to_postfix()
-
-
-# pm1 = PSM()
-# pm1.loadPostfixFile("file")  # завантаження .postfix - файла
-# pm1.postfixExec()
+compile_to_postfix(file_name)
