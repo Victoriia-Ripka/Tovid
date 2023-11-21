@@ -271,6 +271,25 @@ def getValue(lex, tok):
           return lex
 
 
-pm1 = PSM()
-pm1.loadPostfixFile("statyvka")  # завантаження .postfix - файла
-pm1.postfixExec()
+def compileToPostfix(fileName):
+  global len_tableOfSymb , FSuccess
+  print('compileToPostfix: lexer Start Up\n')
+  FSuccess = lex(fileName)
+  print('compileToPostfix: lexer-FSuccess ={0}'.format(FSuccess))
+  # чи був успiшним лексичний розбiр
+  if (True,'Lexer') == FSuccess:
+    len_tableOfSymb = len(tableOfSymb)
+    print('-'*55)
+    print('compileToPostfix: Start Up compiler = parser + codeGenerator\n')
+    FSuccess = (False,'codeGeneration')
+    FSuccess = parseProgram()
+    if FSuccess == (True,'codeGeneration'):
+      serv()
+      savePostfixCode(fileName)
+  return FSuccess
+
+
+compileToPostfix(test)
+# pm1 = PSM()
+# pm1.loadPostfixFile("statyvka")  # завантаження .postfix - файла
+# pm1.postfixExec()

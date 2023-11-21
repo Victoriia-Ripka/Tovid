@@ -53,7 +53,7 @@ f = open(f'{file_name}.tovid', 'r')
 source_code = f.read()
 f.close()
 
-f_success = (True, 'Lexer')
+f_success = ''
 
 len_code = len(source_code)-1
 num_line = 1
@@ -83,9 +83,12 @@ def lex():
                 if is_final(state):
                     processing()
         print('\n\033[0m\033[1m\033[4mLexer\033[0m: \033[92mЛексичний аналіз завершено успішно\033[0m')
+        f_success = (True, 'Lexer')
+        return f_success
     except SystemExit as error:
         f_success = (False, 'Lexer')
         print('\n\033[0m\033[1m\033[4mLexer\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.format(error))
+        return f_success
 
 
 def processing():
@@ -206,7 +209,7 @@ def index_id_const(state, lexeme):
     return indx
 
 
-lex()
+# lex()
 
 
 # print('\n', '-' * 30)
@@ -872,21 +875,20 @@ def fail_parse(str, tuple):
         exit(22)
 
 
-parse_program()
-
-
-print('\033[0m')
-print('-' * 30)
-print('table_of_var: {0}'.format(table_of_var))
-print('-' * 30)
-print('table_of_named_const: {0}'.format(table_of_named_const))
-print('-' * 30)
+# parse_program()
+#
+#
+# print('\033[0m')
+# print('-' * 30)
+# print('table_of_var: {0}'.format(table_of_var))
+# print('-' * 30)
+# print('table_of_named_const: {0}'.format(table_of_named_const))
+# print('-' * 30)
 
 
 # -------------------------------------------------------
 # code generation
 # -------------------------------------------------------
-
 
 import re
 from stack import Stack
@@ -1080,7 +1082,7 @@ class PSM():             # Postfix Stack Machine
               #              (index - не змінився,
               #               тип - як у правого операнда (вони однакові),
               #               значення - як у правого операнда)
-              self.tableOfId[lexL] = (self.tableOfId[lexL][0], tokR, getValue(lexR, tokR))
+              self.tableOfId[lexL] = (self.tableOfId[lexL][0], tokR, get_value(lexR, tokR))
       else:
           self.processingArthBoolOp((lexL, tokL), lex, (lexR, tokR))
 
@@ -1152,7 +1154,9 @@ class PSM():             # Postfix Stack Machine
 class PSMExcept(Exception):
   def __init__(self, msg):
     self.msg = msg
-  def getValue(lex, tok):
+
+
+def get_value(lex, tok):
       if tok == 'float':
           return float(lex)
       elif tok == 'int':
@@ -1161,6 +1165,23 @@ class PSMExcept(Exception):
           return lex
 
 
-pm1 = PSM()
-pm1.loadPostfixFile("file")  # завантаження .postfix - файла
-pm1.postfixExec()
+def compile_to_postfix():
+  global len_table_of_symb, f_success
+  print('compileToPostfix: lexer Start Up\n')
+  f_success = lex()
+  if f_success == (True, 'Lexer'):
+    print('compileToPostfix: Start Up compiler = parser + codeGenerator\n')
+    f_success = (False, 'codeGeneration')
+    f_success = parse_program()
+    if f_success == (True, 'codeGeneration'):
+      serv()
+      savePostfixCode()
+  return f_success
+
+
+compile_to_postfix()
+
+
+# pm1 = PSM()
+# pm1.loadPostfixFile("file")  # завантаження .postfix - файла
+# pm1.postfixExec()
