@@ -53,7 +53,7 @@ f = open(f'{file_name}.tovid', 'r')
 source_code = f.read()
 f.close()
 
-f_success = ''
+f_success = (True, 'Lexer')
 
 len_code = len(source_code)-1
 num_line = 1
@@ -263,10 +263,10 @@ def parse_program():
             else:
                 parse_statementlist()
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
-        f_success == (True, 'codeGeneration')
+        f_success = (True, 'Parser')
         return f_success
     except SystemExit as e:
-        f_success == (False, 'codeGeneration')
+        f_success = (False, 'Parser')
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[91mАварiйне завершення програми з кодом {0}\033[0m".format(e))
         return f_success
 
@@ -466,7 +466,7 @@ def parse_declarlist():
         fail_parse("не дозволений тип даних", (num_line_s, lex, tok))
     if lex in table_of_id.keys():
         if lex in table_of_var.keys() or lex in table_of_named_const.keys():
-            fail_parse('повторне оголошення змінної',(num_line_s, lex, tok))
+            fail_parse('повторне оголошення змінної або константи',(num_line_s, lex, tok))
         current_id = lex
         current_lex_id += 1
         num_line_s, lex, tok = get_current_lexeme(current_lex_id)
@@ -601,6 +601,12 @@ def parse_term():
 
                 if operator == '/':
                     result_type = 'float'
+                    if right_type == 'int':
+                        lex = int(lex)
+                    elif right_type == 'float':
+                        lex = float(lex)
+                    if not lex:
+                        fail_parse('ділення на нуль', (current_line, lex, tok))
                 else:  # elif operator == '*':
                     if left_type == right_type and left_type == 'int':
                         result_type = left_type
@@ -832,9 +838,9 @@ def fail_parse(str, tuple):
         print('\033[91mParser ERROR: \n\t В рядку {0} відбувається ділення на нуль ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(13)
-    elif str == 'повторне оголошення змінної':
+    elif str == 'повторне оголошення змінної або константи':
         (num_line, lexeme, token) = tuple
-        print('\033[91mParser ERROR: \n\t В рядку {0} повторне оголошення змінної ({1}, {2})'
+        print('\033[91mParser ERROR: \n\t В рядку {0} повторне оголошення змінної або константи ({1}, {2})'
               .format(num_line, lexeme, token))
         exit(14)
     elif str == 'не присвоєно значення константі':
@@ -870,7 +876,7 @@ def fail_parse(str, tuple):
     elif str == 'очікувався булевий вираз':
         (num_line) = tuple
         print('\033[91mParser ERROR: \n\t В рядку {0} очікувався булевий вираз'.format(num_line))
-        exit(22)
+        exit(21)
     elif str == '':
         (num_line, lexeme, token) = tuple
         print('\033[91mParser ERROR: \n\t В рядку {0} неочiкуваний елемент ({1}, {2})'.format(num_line, lexeme, token))
@@ -892,7 +898,10 @@ def fail_parse(str, tuple):
 
 
 def serv():
-    pass
+    print(f"pm1.tableOfId:\n {pm1.tableOfId}\n")
+    print(f"pm1.tableOfLabel:\n {pm1.tableOfLabel}\n")
+    print(f"pm1.tableOfConst:\n {pm1.tableOfConst}\n")
+    print(f"pm1.postfixCode:\n {pm1.postfixCode}\n")
 
 
 def save_postfix_code(postfix_code):
@@ -911,7 +920,7 @@ def compile_to_postfix():
   f_success = lex()
   if f_success == (True, 'Lexer'):
     print('compileToPostfix: compiler Start Up: parser + codeGenerator\n')
-    f_success = (False, 'codeGeneration')
+    f_success = (True, 'Parser')
     f_success = parse_program()
     print(f_success)
     if f_success == (True, 'codeGeneration'):

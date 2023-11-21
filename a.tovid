@@ -18,7 +18,7 @@ func main() {
 	const int five := 5
 	const done := "Done!"
 	scanf(a, b)
-	f := (a^2^3) + 3 / five
+	f := (a^2^3) + 3 / 0
 	b := (a+a) < five
 	print(a, f, b)
 
