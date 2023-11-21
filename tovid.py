@@ -235,7 +235,7 @@ def index_id_const(state, lexeme):
 
 
 def parse_program():
-    global current_lex_id, current_line
+    global current_lex_id, current_line, f_success
     try:
         while current_lex_id < len_table_of_symb:
             current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -263,9 +263,12 @@ def parse_program():
             else:
                 parse_statementlist()
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[92mСинтаксичний і семантичний аналiз завершився успiшно\033[0m")
-        return True
+        f_success == (True, 'codeGeneration')
+        return f_success
     except SystemExit as e:
+        f_success == (False, 'codeGeneration')
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[91mАварiйне завершення програми з кодом {0}\033[0m".format(e))
+        return f_success
 
 
 def parse_func():
@@ -892,11 +895,17 @@ def serv():
     pass
 
 
-def save_postfix_code(file_name):
-    pass
+def save_postfix_code(postfix_code):
+    global file_name
+    try:
+        with open(f"{file_name}.postfix", 'w') as file:
+            file.write(postfix_code)
+        print(f"Postfix code saved to {file_name}.postfix successfully.")
+    except Exception as e:
+        print(f"Error saving postfix code to file: {e}")
 
 
-def compile_to_postfix(file_name):
+def compile_to_postfix():
   global len_table_of_symb, f_success
   print('compileToPostfix: lexer Start Up\n')
   f_success = lex()
@@ -904,10 +913,12 @@ def compile_to_postfix(file_name):
     print('compileToPostfix: compiler Start Up: parser + codeGenerator\n')
     f_success = (False, 'codeGeneration')
     f_success = parse_program()
+    print(f_success)
     if f_success == (True, 'codeGeneration'):
       serv()
-      save_postfix_code(file_name)
+      postfix_code = ''
+      save_postfix_code(postfix_code)
   return f_success
 
 
-compile_to_postfix(file_name)
+compile_to_postfix()
