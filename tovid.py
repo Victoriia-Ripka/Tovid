@@ -1,4 +1,5 @@
 # Tovid language lexer and parser
+from postfixMachine import PSM, postfix_code_gen
 
 token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
                'return': 'keyword', 'if': 'keyword', 'else': 'keyword', 'for': 'keyword', 'range': 'keyword',
@@ -68,6 +69,8 @@ params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
+pm = PSM(file_name)
+postfixCode = []
 
 
 def lex():
@@ -454,11 +457,15 @@ def parse_declarlist():
     keyword = lex
     current_lex_id += 1
     num_line_s, lex, tok = get_current_lexeme(current_lex_id)
+    lType = ''
+    rType = ''
     if lex in allowed_data_types:
         declared_datatype = lex
         current_lex_id += 1
         num_line_s, lex, tok = get_current_lexeme(current_lex_id)
         datatype_is_declared = True
+        lType = declared_datatype
+        # postfix_code_gen('lval', (lex, tok))
     elif lex in table_of_id.keys():
         datatype_is_declared = False
     else:
@@ -897,20 +904,22 @@ def fail_parse(str, tuple):
 
 
 def serv():
-    print(f"pm1.tableOfId:\n {pm1.tableOfId}\n")
-    print(f"pm1.tableOfLabel:\n {pm1.tableOfLabel}\n")
-    print(f"pm1.tableOfConst:\n {pm1.tableOfConst}\n")
-    print(f"pm1.postfixCode:\n {pm1.postfixCode}\n")
+    print(f"pm1.tableOfId:\n {pm.tableOfId}\n")
+    print(f"pm1.tableOfLabel:\n {pm.tableOfLabel}\n")
+    print(f"pm1.tableOfConst:\n {pm.tableOfConst}\n")
+    print(f"pm1.postfixCode:\n {pm.postfixCode}\n")
 
 
-def save_postfix_code(postfix_code):
+# Виклик функцiї savePostfixCode() приводить до побудови постфiкс-коду
+#  i виведення на консоль iнформацiї
+def save_postfix_code():
     global file_name
     try:
         with open(f"{file_name}.postfix", 'w') as file:
-            file.write(postfix_code)
-        print(f"Postfix code saved to {file_name}.postfix successfully.")
+            file.write()
+        print(f"Postfix code збережено до {file_name}.postfix успішно.")
     except Exception as e:
-        print(f"Error saving postfix code to file: {e}")
+        print(f"Помилка при збережені файла: {e}")
 
 
 def compile_to_postfix():

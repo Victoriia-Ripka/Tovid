@@ -7,14 +7,14 @@ from stack import Stack
 
 
 class PSM():             # Postfix Stack Machine
-  def __init__(self):
+  def __init__(self, file_name):
     self.tableOfId = {}
     self.tableOfLabel = {}
     self.tableOfConst = {}
     self.postfixCode = []
     self.mapDebug = {}
     self.numLine = 0
-    self.fileName = ""
+    self.file_name = file_name
     self.file = ""
     self.slt = ""
     self.headSection = {"VarDecl": ".vars(", "LblDecl": ".labels(", "ConstDecl": ".constants(", "Code": ".code("}
@@ -28,40 +28,40 @@ class PSM():             # Postfix Stack Machine
     self.numInstr = 0
     self.maxNumbInstr = 0
 
-  def loadPostfixFile(self, fileName):
+  def load_postfix_file(self, file_name):
     try:
-      self.fileName = fileName + ".tovid"
-      self.file = open(self.fileName, 'r')
-      self.parsePostfixProgram()
+      self.fileName = file_name + ".tovid"
+      self.file = open(self.file_name, 'r')
+      self.parse_postfix_program()
       self.file.close()
     except PSMExcept as e:
       print(f"PSM.loadPostfixFile ERROR: у рядку {self.numLine}, код винятку - {e.msg}, msg = {self.errMsg[e.msg]}")
 
-  def parsePostfixProgram(self):
+  def parse_postfix_program(self):
       # print("--------- header ")
-      self.parseHeader(".target: Postfix Machine")
+      self.parse_header(".target: Postfix Machine")
       # print(f"have header1 {self.numLine}")
-      self.parseHeader(".version: 0.2")
+      self.parse_header(".version: 0.2")
       # print(f"have header2 {self.numLine}")
 
-      self.parseSection("VarDecl")
+      self.parse_section("VarDecl")
       # print(f"have var {self.numLine}")
 
-      self.parseSection("LblDecl")
+      self.parse_section("LblDecl")
       # print("have lbl ")
 
-      self.parseSection("ConstDecl")
+      self.parse_section("ConstDecl")
       # print("have const ")
 
-      self.parseSection("Code")  # mapDebug:: numInstr -> numLine
+      self.parse_section("Code")  # mapDebug:: numInstr -> numLine
       # print("have code ")
 
-  def parseHeader(self, header):
+  def parse_header(self, header):
       if self.file.readline().rstrip() != header:
           raise PSMExcept(1)
       self.numLine += 1
 
-  def parseSection(self, section):
+  def parse_section(self, section):
       # print("============Section: "+section)
       headerSect = self.headSection[section]
       s = self.file.readline().partition("#")[0].strip()
@@ -93,9 +93,9 @@ class PSM():             # Postfix Stack Machine
               F = False
           else:
               self.slt = s
-              self.procSection(section)
+              self.proc_section(section)
 
-  def procSection(self, section):
+  def proc_section(self, section):
       list = self.slt.split()
       if len(list) != 2:
           raise PSMExcept(4)
@@ -129,7 +129,7 @@ class PSM():             # Postfix Stack Machine
               instrNum = len(self.postfixCode) - 1
               self.mapDebug[instrNum] = self.numLine
 
-  def postfixExec(self):
+  def postfix_exec(self):
       "Виконує postfixCode"
       print('postfixExec:')
       self.maxNumbInstr = len(self.postfixCode)
@@ -141,21 +141,21 @@ class PSM():             # Postfix Stack Machine
                   self.stack.push((lex, tok))
                   self.numInstr = self.numInstr + 1
               elif tok in ('jump', 'jf', 'colon'):
-                  self.doJumps(lex, tok)
+                  self.do_jumps(lex, tok)
               elif tok == 'out_op':
                   id, _ = self.stack.pop()
                   self.numInstr = self.numInstr + 1
                   print(f'-------------- OUT: {id}={self.tableOfId[id][2]}')
               else:
                   print(f'-=-=-=========({lex},{tok})  numInstr={self.numInstr}')
-                  self.doIt(lex, tok)
+                  self.do_it(lex, tok)
                   self.numInstr = self.numInstr + 1
           self.stack.print()
       except PSMExcept as e:
           # Повідомити про факт виявлення помилки
           print('RunTime: Аварійне завершення програми з кодом {0}'.format(e))
 
-  def doJumps(self, lex, tok):
+  def do_jumps(self, lex, tok):
       ni = self.numInstr
       if tok == 'jump':
           lexLbl, _ = self.stack.pop()  # зняти з вершини стека мітку
@@ -172,7 +172,7 @@ class PSM():             # Postfix Stack Machine
               self.numInstr = self.numInstr + 1
       print(f'+=+=+=========({lex},{tok})  numInstr={ni} nextNumInstr={self.numInstr}')
 
-  def doIt(self, lex, tok):
+  def do_it(self, lex, tok):
       # зняти з вершини стека ідентифікатор (правий операнд)
       # self.stack.print()
       (lexR, tokR) = self.stack.pop()
@@ -191,18 +191,18 @@ class PSM():             # Postfix Stack Machine
               #              (index - не змінився,
               #               тип - як у правого операнда (вони однакові),
               #               значення - як у правого операнда)
-              self.tableOfId[lexL] = (self.tableOfId[lexL][0], tokR, getValue(lexR, tokR))
+              self.tableOfId[lexL] = (self.tableOfId[lexL][0], tokR, get_value(lexR, tokR))
       else:
-          self.processingArthBoolOp((lexL, tokL), lex, (lexR, tokR))
+          self.processing_arth_bool_op((lexL, tokL), lex, (lexR, tokR))
 
-  def processingArthBoolOp(self, lexTokL, arthBoolOp, lexTokR):
-      (lexL, tokL) = lexTokL
-      (lexR, tokR) = lexTokR
-      typeL, valL = self.getValTypeOperand(lexL, tokL)
-      typeR, valR = self.getValTypeOperand(lexR, tokR)
-      self.applyOperator((lexL, typeL, valL), arthBoolOp, (lexR, typeR, valR))
+  def processing_arth_bool_op(self, lex_tok_l, arth_bool_op, lex_tok_r):
+      (lexL, tokL) = lex_tok_l
+      (lexR, tokR) = lex_tok_r
+      type_l, val_l = self.get_val_type_operand(lexL, tokL)
+      type_r, val_r = self.get_val_type_operand(lexR, tokR)
+      self.apply_operator((lexL, type_l, val_l), arth_bool_op, (lexR, type_r, val_r))
 
-  def getValTypeOperand(self, lex, tok):
+  def get_val_type_operand(self, lex, tok):
       if tok == "r-val":
           if self.tableOfId[lex][2] == 'val_undef':
               raise PMExcept(8)  # 'неініційована змінна', (lexL,tableOfId[lexL], (lexL,tokL
@@ -219,50 +219,51 @@ class PSM():             # Postfix Stack Machine
           type = tok
       return (type, val)
 
-  def applyOperator(self, lexTypeValL, arthBoolOp, lexTypeValR):
-      (lexL, typeL, valL) = lexTypeValL
-      (lexR, typeR, valR) = lexTypeValR
+  def apply_operator(self, lex_type_val_l, arth_bool_op, lex_type_val_r):
+      (lexL, typeL, valL) = lex_type_val_l
+      (lexR, typeR, valR) = lex_type_val_r
       if typeL != typeR:
           raise PMExcept(9)  # типи операндів відрізняються
-      elif arthBoolOp == '+':
+      elif arth_bool_op == '+':
           value = valL + valR
-      elif arthBoolOp == '-':
+      elif arth_bool_op == '-':
           value = valL - valR
-      elif arthBoolOp == '*':
+      elif arth_bool_op == '*':
           value = valL * valR
-      elif arthBoolOp == '/' and valR == 0:
+      elif arth_bool_op == '/' and valR == 0:
           raise PMExcept(10)  # ділення на нуль
-      elif arthBoolOp == '/' and typeL == 'float':
+      elif arth_bool_op == '/' and typeL == 'float':
           value = valL / valR
-      elif arthBoolOp == '/' and typeL == 'int':
+      elif arth_bool_op == '/' and typeL == 'int':
           value = int(valL / valR)
-      elif arthBoolOp == '<':
+      elif arth_bool_op == '<':
           value = str(valL < valR).lower()
-      elif arthBoolOp == '<=':
+      elif arth_bool_op == '<=':
           value = str(valL <= valR).lower()
-      elif arthBoolOp == '>':
+      elif arth_bool_op == '>':
           value = str(valL > valR).lower()
-      elif arthBoolOp == '>=':
+      elif arth_bool_op == '>=':
           value = str(valL >= valR).lower()
-      elif arthBoolOp == '=':
+      elif arth_bool_op == '=':
           value = str(valL == valR).lower()
-      elif arthBoolOp == '<>':
+      elif arth_bool_op == '<>':
           value = str(valL != valR).lower()
       else:
           pass
       # покласти результат на стек
-      if arthBoolOp in ('<', '<=', '>', '>=', '=', '<>'):
+      if arth_bool_op in ('<', '<=', '>', '>=', '=', '<>'):
           self.stack.push((str(value), 'bool'))
       else:
           self.stack.push((str(value), typeL))
 
 
 class PSMExcept(Exception):
+
   def __init__(self, msg):
     self.msg = msg
 
 
-def getValue(lex, tok):
+def get_value(lex, tok):
       if tok == 'float':
           return float(lex)
       elif tok == 'int':
@@ -271,6 +272,21 @@ def getValue(lex, tok):
           return lex
 
 
-pm1 = PSM()
-pm1.loadPostfixFile("statyvka")  # завантаження .postfix - файла
-pm1.postfixExec()
+postfix_code = []
+
+
+def postfix_code_gen(case, to_tran):
+    global postfix_code
+    if case == 'lval':
+        lex, tok = to_tran
+        postfix_code.append((lex, 'l-val'))
+    elif case == 'rval':
+        lex, tok = to_tran
+        postfix_code.append((lex, 'r-val'))
+    else:
+        lex, tok = to_tran
+        postfix_code.append((lex, tok))
+
+
+# pm1.loadPostfixFile("")  # завантаження .postfix - файла
+# pm1.postfix_exec()
