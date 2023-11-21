@@ -68,7 +68,7 @@ class PSM():             # Postfix Stack Machine
       self.numLine += 1
       # один порожній рядок обов'язковий
       if s != "":
-          raise PMExcept(2)
+          raise PSMExcept(2)
       # інші (можливі) порожні рядки та заголовок секції
       F = True
       while F:

@@ -54,7 +54,7 @@ f = open(f'{file_name}.tovid', 'r')
 source_code = f.read()
 f.close()
 
-f_success = (True, 'Lexer')
+f_success = ''
 
 len_code = len(source_code)-1
 num_line = 1
@@ -387,11 +387,12 @@ def parse_declared_var(lexeme, token):
     global current_lex_id, current_line
     current_line, lex, tok = get_current_lexeme(current_lex_id)
     ident_line = current_line
-
+    postfix_code_gen('lval', (lex, tok))
     if lexeme in table_of_var.keys():
         current_lex_id += 1
         parse_token(':=', 'assign_op', current_lex_id)
         new_type = parse_expression()
+        postfix_code_gen(':=', (':=', 'assign_op'))
         index, old_type, _ = table_of_var[lexeme]
         if new_type == old_type:
             table_of_var[lexeme] = (index, old_type, 'assigned')
@@ -474,12 +475,15 @@ def parse_declarlist():
         if lex in table_of_var.keys() or lex in table_of_named_const.keys():
             fail_parse('повторне оголошення змінної або константи',(num_line_s, lex, tok))
         current_id = lex
+        current_token = tok
         current_lex_id += 1
         num_line_s, lex, tok = get_current_lexeme(current_lex_id)
         index = len(table_of_var) + 1 if keyword == 'var' else len(table_of_named_const) + 1
         if tok == 'assign_op':
+            postfix_code_gen('lval', (current_id, current_token))
             current_lex_id += 1
             value_datatype = parse_expression()
+            postfix_code_gen(':=', (':=', 'assign_op'))
             if datatype_is_declared:
                 if declared_datatype == value_datatype:
                     if keyword == 'var':
@@ -537,12 +541,14 @@ def parse_expression():
             finish = True
         else:
             if tok == 'rel_op':
+                rel_op = lex
                 current_lex_id += 1
                 right_type = parse_arithm_expression()
                 if not (left_type == 'string' or right_type == 'string' or left_type == 'complex' or right_type == 'complex'):
                     result_type = 'boolean'
                 else:
                     fail_parse('неможливо виконати порівняння', (current_line, left_type, right_type))
+                postfix_code_gen(rel_op, (rel_op, 'rel_op'))
             else:
                 finish = True
     return result_type
@@ -565,6 +571,7 @@ def parse_arithm_expression():
             finish = True
         else:
             if tok == 'add_op':
+                add_op = lex
                 current_lex_id += 1
                 right_type = parse_term()
                 if left_type == right_type and left_type == 'int':
@@ -577,6 +584,7 @@ def parse_arithm_expression():
                     result_type = 'complex'
                 else:
                     result_type = 'float'
+                postfix_code_gen(add_op, (add_op, 'add_op'))
             else:
                 finish = True
     return result_type
@@ -604,6 +612,7 @@ def parse_term():
                     fail_parse('невідповідність типів', (current_line, left_type, right_type))
                 elif left_type == 'string' or right_type == 'string':
                     fail_parse('арифметична дія над стрічкою', (current_line, lex, tok))
+                postfix_code_gen(operator, (operator, 'mult_op'))
 
                 if operator == '/':
                     result_type = 'float'
@@ -646,6 +655,7 @@ def parse_chunk():
                 elif left_type == 'string' or right_type == 'string':
                     fail_parse('арифметична дія над стрічкою', (current_line, lex, tok))
                 result_type = 'float'
+                postfix_code_gen('^', ('^', 'pow_op'))
             else:
                 finish = True
     return result_type
@@ -659,14 +669,19 @@ def parse_factor():
         if table_of_var[lex][2] == 'undefined':
             fail_parse('використання undefined змінної', (current_line, lex, tok))
         factor_type = table_of_var[lex][1]
+        postfix_code_gen('rval', (lex, 'rval'))
     elif lex in table_of_named_const.keys():
         factor_type = table_of_named_const[lex][1]
+        postfix_code_gen('rval', (lex, 'rval'))
     elif lex in table_of_const.keys():
         factor_type = table_of_const[lex][0]
+        postfix_code_gen('const', (lex, tok))
     elif tok == 'string':
         factor_type = 'string'
+        # все одно вилетить на функції parse_chunk()
     elif lex in bool_expr_results:
         factor_type = 'boolean'
+        # все одно вилетить на функції parse_chunk()
     elif lex == '(':
         current_lex_id += 1
         current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -928,13 +943,11 @@ def compile_to_postfix():
   f_success = lex()
   if f_success == (True, 'Lexer'):
     print('compileToPostfix: compiler Start Up: parser + codeGenerator\n')
-    f_success = (True, 'Parser')
     f_success = parse_program()
     print(f_success)
-    if f_success == (True, 'codeGeneration'):
+    if f_success == (True, 'Parser'):
       serv()
-      postfix_code = ''
-      save_postfix_code(postfix_code)
+      save_postfix_code()
   return f_success
 
 
