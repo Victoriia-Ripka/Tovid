@@ -45,6 +45,7 @@ table_of_const = {}
 
 table_of_var = {}
 table_of_named_const = {}
+table_of_labels = {}
 bool_expr_results = ('true', 'false')
 
 state = init_state
@@ -523,6 +524,7 @@ def parse_expression():
     if lex in bool_expr_results:
         left_type = 'boolean'
         current_lex_id += 1
+        postfixCode.append((lex, tok))
         finish = True
     else:
         left_type = parse_arithm_expression()
@@ -746,6 +748,9 @@ def parse_if():
             fail_parse('очікувався булевий вираз', current_line)
         parse_token('{', 'brack_op','')
         current_line, lex, tok = get_current_lexeme(current_lex_id)
+        m1 = create_label()
+        postfixCode.append(m1)  # Трансляцiя
+        postfixCode.append(('JF', 'jf'))
         parse_statementlist()
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         parse_token('}','brack_op','')
@@ -753,8 +758,17 @@ def parse_if():
         if lex == 'else' and tok == 'keyword':
             parse_token('else', 'keyword','')
             parse_token('{', 'brack_op','')
+            m2 = create_label()
+            postfixCode.append(m2)  # Трансляцiя
+            postfixCode.append(('JMP', 'jump'))
+            set_value_label(m1)  # в табл. мiток
+            postfixCode.append(m1)
+            postfixCode.append((':', 'colon'))
             parse_statementlist()
             parse_token('}', 'brack_op','')
+            set_value_label(m2)  # в табл. мiток
+            postfixCode.append(m2)  # Трансляцiя
+            postfixCode.append((':', 'colon'))
     else:
         fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok))
 
@@ -949,6 +963,28 @@ def compile_to_postfix():
       serv()
       save_postfix_code()
   return f_success
+
+
+def set_value_label(label):
+    global table_of_labels
+    lex, tok = label
+    table_of_labels[lex] = len(postfixCode)
+    return True
+
+
+def create_label():
+    global table_of_labels
+    number = len(table_of_labels)+1
+    lexeme = "m" + str(number)
+    value = table_of_labels.get(lexeme)
+    if not value:
+        table_of_labels[lexeme] = 'val_undef'
+        tok = 'label'  # # #
+    else:
+        tok = 'Конфлiкт мiток'
+        print(tok)
+        exit(1003)
+    return (lexeme, tok)
 
 
 compile_to_postfix()
