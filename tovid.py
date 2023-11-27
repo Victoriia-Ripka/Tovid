@@ -54,7 +54,7 @@ f = open(f'{file_name}.tovid', 'r')
 source_code = f.read()
 f.close()
 
-f_success = ''
+f_success = (False, 'Lexer')
 
 len_code = len(source_code)-1
 num_line = 1
@@ -268,9 +268,9 @@ def parse_program():
         f_success = (True, 'Parser')
         return f_success
     except SystemExit as e:
-        f_success = (False, 'Parser')
         print("\n\033[0m\033[1m\033[4mParser\033[0m: \033[91mАварiйне завершення програми з кодом {0}\033[0m".format(e))
-        return f_success
+        # f_success = (False, 'Parser')
+        # return f_success
 
 
 def parse_func():
@@ -931,20 +931,19 @@ def save_postfix_code():
     global file_name
     try:
         with open(f"{file_name}.postfix", 'w') as file:
-            file.write()
+            file.write(str(pm.postfixCode))
         print(f"Postfix code збережено до {file_name}.postfix успішно.")
     except Exception as e:
         print(f"Помилка при збережені файла: {e}")
 
 
 def compile_to_postfix():
-  global len_table_of_symb, f_success
-  print('compileToPostfix: lexer Start Up\n')
+  global len_table_of_symb, f_success, table_of_symb
   f_success = lex()
   if f_success == (True, 'Lexer'):
-    print('compileToPostfix: compiler Start Up: parser + codeGenerator\n')
+    f_success = (False, 'Parser')
+    len_table_of_symb = len(table_of_symb)
     f_success = parse_program()
-    print(f_success)
     if f_success == (True, 'Parser'):
       serv()
       save_postfix_code()
