@@ -18,7 +18,7 @@ func main() {
 	const int five := 5
 	const done := "Done!"
 	scanf(a, b)
-	f := (a^2^3) + 3 / 0
+	f := (a^2^3) + 3 / 2
 	b := (a+a) < five
 	print(a, f, b)
 
@@ -48,7 +48,7 @@ func sum() {
     return a
 }
 
-for m := five; m >= nil; m + 12 {
+/* for m := five; m >= nil; m + 12 {
     if m != nil {
         print("Not yet!")
         if m != nil {
@@ -61,10 +61,10 @@ for m := five; m >= nil; m + 12 {
     else {
         print(done)
     }
-}
+} */
 
 // var k := five
-for k <= 10 {
+/* for k <= 10 {
     print(k)
     k := k + 1
-}
+} */

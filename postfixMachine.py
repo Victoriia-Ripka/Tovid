@@ -6,7 +6,7 @@ import re
 from stack import Stack
 
 
-class PSM():             # Postfix Stack Machine
+class PSM:             # Postfix Stack Machine
   def __init__(self, file_name):
     self.tableOfId = {}
     self.tableOfLabel = {}
@@ -205,7 +205,7 @@ class PSM():             # Postfix Stack Machine
   def get_val_type_operand(self, lex, tok):
       if tok == "r-val":
           if self.tableOfId[lex][2] == 'val_undef':
-              raise PMExcept(8)  # 'неініційована змінна', (lexL,tableOfId[lexL], (lexL,tokL
+              raise PSMExcept(8)  # 'неініційована змінна', (lexL,tableOfId[lexL], (lexL,tokL
           else:
               type, val = (self.tableOfId[lex][1], self.tableOfId[lex][2])
       elif tok == 'int':
@@ -223,7 +223,7 @@ class PSM():             # Postfix Stack Machine
       (lexL, typeL, valL) = lex_type_val_l
       (lexR, typeR, valR) = lex_type_val_r
       if typeL != typeR:
-          raise PMExcept(9)  # типи операндів відрізняються
+          raise PSMExcept(9)  # типи операндів відрізняються
       elif arth_bool_op == '+':
           value = valL + valR
       elif arth_bool_op == '-':
@@ -231,7 +231,7 @@ class PSM():             # Postfix Stack Machine
       elif arth_bool_op == '*':
           value = valL * valR
       elif arth_bool_op == '/' and valR == 0:
-          raise PMExcept(10)  # ділення на нуль
+          raise PSMExcept(10)  # ділення на нуль
       elif arth_bool_op == '/' and typeL == 'float':
           value = valL / valR
       elif arth_bool_op == '/' and typeL == 'int':
