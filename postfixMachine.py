@@ -30,7 +30,7 @@ class PSM:             # Postfix Stack Machine
 
   def load_postfix_file(self, file_name):
     try:
-      self.fileName = file_name + ".tovid"
+      self.file_name = file_name + ".postfix"
       self.file = open(self.file_name, 'r')
       self.parse_postfix_program()
       self.file.close()
@@ -130,7 +130,7 @@ class PSM:             # Postfix Stack Machine
               self.mapDebug[instrNum] = self.numLine
 
   def postfix_exec(self):
-      "Виконує postfixCode"
+      """Виконує postfixCode"""
       print('postfixExec:')
       self.maxNumbInstr = len(self.postfixCode)
       try:
@@ -219,6 +219,7 @@ class PSM:             # Postfix Stack Machine
           type = tok
       return (type, val)
 
+
   def apply_operator(self, lex_type_val_l, arth_bool_op, lex_type_val_r):
       (lexL, typeL, valL) = lex_type_val_l
       (lexR, typeR, valR) = lex_type_val_r
@@ -272,21 +273,6 @@ def get_value(lex, tok):
           return lex
 
 
-postfix_code = []
-
-
-def postfix_code_gen(case, to_tran):
-    global postfix_code
-    if case == 'lval':
-        lex, tok = to_tran
-        postfix_code.append((lex, 'l-val'))
-    elif case == 'rval':
-        lex, tok = to_tran
-        postfix_code.append((lex, 'r-val'))
-    else:
-        lex, tok = to_tran
-        postfix_code.append((lex, tok))
-
-
-# pm1.loadPostfixFile("")  # завантаження .postfix - файла
+# pm1 = PSM('a.tovid')
+# pm1.load_postfix_file("a.postfix")  # завантаження .postfix - файла
 # pm1.postfix_exec()
