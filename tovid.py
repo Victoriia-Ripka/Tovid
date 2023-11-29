@@ -1,5 +1,5 @@
 # Tovid language lexer and parser
-from postfixMachine import PSM, postfix_code_gen
+from postfixMachine import PSM
 
 token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
                'return': 'keyword', 'if': 'keyword', 'else': 'keyword', 'for': 'keyword', 'range': 'keyword',
@@ -71,7 +71,7 @@ params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
 
 pm = PSM(file_name)
-postfixCode = []
+postfix_code = []
 
 
 def lex():
@@ -524,7 +524,7 @@ def parse_expression():
     if lex in bool_expr_results:
         left_type = 'boolean'
         current_lex_id += 1
-        postfixCode.append((lex, tok))
+        postfix_code.append((lex, tok))
         finish = True
     else:
         left_type = parse_arithm_expression()
@@ -749,8 +749,8 @@ def parse_if():
         parse_token('{', 'brack_op','')
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         m1 = create_label()
-        postfixCode.append(m1)  # Трансляцiя
-        postfixCode.append(('JF', 'jf'))
+        postfix_code.append(m1)  # Трансляцiя
+        postfix_code.append(('JF', 'jf'))
         parse_statementlist()
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         parse_token('}','brack_op','')
@@ -759,16 +759,16 @@ def parse_if():
             parse_token('else', 'keyword','')
             parse_token('{', 'brack_op','')
             m2 = create_label()
-            postfixCode.append(m2)  # Трансляцiя
-            postfixCode.append(('JMP', 'jump'))
+            postfix_code.append(m2)  # Трансляцiя
+            postfix_code.append(('JMP', 'jump'))
             set_value_label(m1)  # в табл. мiток
-            postfixCode.append(m1)
-            postfixCode.append((':', 'colon'))
+            postfix_code.append(m1)
+            postfix_code.append((':', 'colon'))
             parse_statementlist()
             parse_token('}', 'brack_op','')
             set_value_label(m2)  # в табл. мiток
-            postfixCode.append(m2)  # Трансляцiя
-            postfixCode.append((':', 'colon'))
+            postfix_code.append(m2)  # Трансляцiя
+            postfix_code.append((':', 'colon'))
     else:
         fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok))
 
@@ -936,19 +936,31 @@ def serv():
     print(f"pm1.tableOfId:\n {pm.tableOfId}\n")
     print(f"pm1.tableOfLabel:\n {pm.tableOfLabel}\n")
     print(f"pm1.tableOfConst:\n {pm.tableOfConst}\n")
-    print(f"pm1.postfixCode:\n {pm.postfixCode}\n")
+    print(f"pm1.postfix_code:\n {pm.postfixCode}\n")
 
 
-# Виклик функцiї savePostfixCode() приводить до побудови постфiкс-коду
+# Виклик функцiї savepostfix_code() приводить до побудови постфiкс-коду
 #  i виведення на консоль iнформацiї
 def save_postfix_code():
     global file_name
     try:
         with open(f"{file_name}.postfix", 'w') as file:
-            file.write(str(pm.postfixCode))
+            file.write(str(postfix_code))  # тимчасово записую туди сам список
         print(f"Postfix code збережено до {file_name}.postfix успішно.")
     except Exception as e:
         print(f"Помилка при збережені файла: {e}")
+
+
+def postfix_code_gen(case, to_tran):
+    if case == 'lval':
+        lex, tok = to_tran
+        postfix_code.append((lex, 'l-val'))
+    elif case == 'rval':
+        lex, tok = to_tran
+        postfix_code.append((lex, 'r-val'))
+    else:
+        lex, tok = to_tran
+        postfix_code.append((lex, tok))
 
 
 def compile_to_postfix():
@@ -967,7 +979,7 @@ def compile_to_postfix():
 def set_value_label(label):
     global table_of_labels
     lex, tok = label
-    table_of_labels[lex] = len(postfixCode)
+    table_of_labels[lex] = len(postfix_code)
     return True
 
 
@@ -987,3 +999,7 @@ def create_label():
 
 
 compile_to_postfix()
+
+
+pm.load_postfix_file(f'{file_name}')
+pm.postfix_exec()
