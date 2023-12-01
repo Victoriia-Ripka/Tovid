@@ -1,1 +1,109 @@
-[('h', 'l-val'), ('10.1', 'float'), ('5.2', 'float'), ('+', 'add_op'), (':=', 'assign_op'), ('a', 'l-val'), ('1', 'int'), (':=', 'assign_op'), ('b', 'l-val'), ('true', 'keyword'), (':=', 'assign_op'), ('k', 'l-val'), ('10', 'int'), (':=', 'assign_op'), ('c1', 'l-val'), ('2i', 'complex'), (':=', 'assign_op'), ('c2', 'l-val'), ('1+3i', 'complex'), (':=', 'assign_op'), ('five', 'l-val'), ('5', 'int'), (':=', 'assign_op'), ('done', 'l-val'), (':=', 'assign_op'), ('f', 'l-val'), ('a', 'r-val'), ('2', 'int'), ('^', 'pow_op'), ('3', 'int'), ('^', 'pow_op'), ('3', 'int'), ('2', 'int'), ('/', 'mult_op'), ('+', 'add_op'), (':=', 'assign_op'), ('b', 'l-val'), ('a', 'r-val'), ('a', 'r-val'), ('+', 'add_op'), ('five', 'r-val'), ('<', 'rel_op'), (':=', 'assign_op'), ('c3', 'l-val'), ('c1', 'r-val'), ('c2', 'r-val'), ('+', 'add_op'), (':=', 'assign_op'), ('a', 'r-val'), ('15', 'int'), ('==', 'rel_op'), ('m1', 'label'), ('JF', 'jf'), ('m2', 'label'), ('JMP', 'jump'), ('m1', 'label'), (':', 'colon'), ('a', 'r-val'), ('a', 'r-val'), ('+', 'add_op'), ('a', 'r-val'), ('3', 'int'), ('*', 'mult_op'), ('>=', 'rel_op'), ('m3', 'label'), ('JF', 'jf'), ('m2', 'label'), (':', 'colon')]
+.target: Postfix Machine
+.version: 0.0.1
+
+.vars(
+	a      int    
+	f      float  
+	b      boolean
+	k      int    
+	c1     complex
+	c2     complex
+	c3     complex
+)
+
+.constants(
+	10.1   float  
+	5.2    float  
+	1      int    
+	10     int    
+	2i     complex
+	1+3i   complex
+	5      int    
+	2      int    
+	3      int    
+	15     int    
+	12     int    
+)
+
+.named_constants(
+	h      float  
+	five   int    
+	done   string 
+)
+
+.labels(
+	m1   55   
+	m2   66   
+)
+
+.code(
+	h        l-val    
+	10.1     float    
+	5.2      float    
+	+        add_op   
+	:=       assign_op
+	a        l-val    
+	1        int      
+	:=       assign_op
+	b        l-val    
+	true     keyword  
+	:=       assign_op
+	k        l-val    
+	10       int      
+	:=       assign_op
+	c1       l-val    
+	2i       complex  
+	:=       assign_op
+	c2       l-val    
+	1+3i     complex  
+	:=       assign_op
+	five     l-val    
+	5        int      
+	:=       assign_op
+	done     l-val    
+	:=       assign_op
+	f        l-val    
+	a        r-val    
+	2        int      
+	^        pow_op   
+	3        int      
+	^        pow_op   
+	3        int      
+	2        int      
+	/        mult_op  
+	+        add_op   
+	:=       assign_op
+	b        l-val    
+	a        r-val    
+	a        r-val    
+	+        add_op   
+	five     r-val    
+	<        rel_op   
+	:=       assign_op
+	c3       l-val    
+	c1       r-val    
+	c2       r-val    
+	+        add_op   
+	:=       assign_op
+	a        r-val    
+	15       int      
+	==       rel_op   
+	m1       label    
+	JF       jf       
+	m2       label    
+	JMP      jump     
+	m1       label    
+	:        colon    
+	a        r-val    
+	a        r-val    
+	+        add_op   
+	a        r-val    
+	3        int      
+	*        mult_op  
+	>=       rel_op   
+	m3       label    
+	JF       jf       
+	m2       label    
+	:        colon    
+)
+

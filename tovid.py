@@ -933,7 +933,7 @@ def fail_parse(str, tuple):
 
 
 def serv():
-    print(f"pm1.tableOfId:\n {pm.tableOfId}\n")
+    print(f"pm1.tableOfId:\n {pm.tableOfVar}\n")
     print(f"pm1.tableOfLabel:\n {pm.tableOfLabel}\n")
     print(f"pm1.tableOfConst:\n {pm.tableOfConst}\n")
     print(f"pm1.postfix_code:\n {pm.postfixCode}\n")
@@ -945,7 +945,97 @@ def save_postfix_code():
     global file_name
     try:
         with open(f"{file_name}.postfix", 'w') as file:
-            file.write(str(postfix_code))  # тимчасово записую туди сам список
+            section = '.target: Postfix Machine\n'
+            file.write(section)
+            section = '.version: 0.0.1\n\n'
+            file.write(section)
+
+            section = '.vars(\n'
+            identifiers = [i for i in table_of_var.keys()]
+            datatypes = [j[1] for j in table_of_var.values()]
+            vars_for_postfix = []
+            for i in range(len(identifiers)):
+                vars_for_postfix.append((identifiers[i], datatypes[i]))
+            # print('\n', vars_for_postfix, '\n')
+            column_width = max(len(word) for row in vars_for_postfix for word in row)  # padding
+            for row in vars_for_postfix:
+                section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
+            section += ')\n\n'
+            file.write(section)
+
+            section = '.constants(\n'
+            identifiers = [i for i in table_of_const.keys()]
+            datatypes = [j[0] for j in table_of_const.values()]
+            consts_for_postfix = []
+            for i in range(len(identifiers)):
+                consts_for_postfix.append((identifiers[i], datatypes[i]))
+            # print('\n', consts_for_postfix, '\n')
+            column_width = max(len(word) for row in consts_for_postfix for word in row)  # padding
+            for row in consts_for_postfix:
+                section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
+            section += ')\n\n'
+            file.write(section)
+
+            section = '.named_constants(\n'
+            identifiers = [i for i in table_of_named_const.keys()]
+            datatypes = [j[1] for j in table_of_named_const.values()]
+            named_consts_for_postfix = []
+            for i in range(len(identifiers)):
+                named_consts_for_postfix.append((identifiers[i], datatypes[i]))
+            # print('\n', named_consts_for_postfix, '\n')
+            column_width = max(len(word) for row in named_consts_for_postfix for word in row) + 1  # padding
+            for row in named_consts_for_postfix:
+                section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
+            section += ')\n\n'
+            file.write(section)
+
+            section = '.labels(\n'
+            labels = []
+            # element_index = [j[0] for j in table_of_const.values()]
+            for pair_num in range(len(postfix_code)):
+                if postfix_code[pair_num][1] != 'label':
+                    pair_num += 1
+                else:  # коли все-ж попадаємо на label
+                    if postfix_code[pair_num+1][1] == 'colon':
+                        labels.append((postfix_code[pair_num][0], pair_num))
+                    else:
+                        pair_num += 1
+
+            # consts_for_postfix = []
+            # for i in range(len(identifiers)):
+            #     consts_for_postfix.append((identifiers[i], datatypes[i]))
+            print('\n', labels, '\n')
+            column_width = max(len(str(word)) for row in labels for word in row) + 3  # padding
+            for row in labels:
+                section += '\t' + ''.join(str(word).ljust(column_width) for word in row) + '\n'
+            section += ')\n\n'
+            file.write(section)
+
+            section = '.code(\n'
+            # labels = []
+            # element_index = [j[0] for j in table_of_const.values()]
+            # for pair_num in range(len(postfix_code)):
+            #     if postfix_code[pair_num][1] != 'label':
+            #         pair_num += 1
+            #     else:  # коли все-ж попадаємо на label
+            #         if postfix_code[pair_num + 1][1] == 'colon':
+            #             labels.append((postfix_code[pair_num][0], pair_num))
+            #         else:
+            #             pair_num += 1
+
+            # consts_for_postfix = []
+            # for i in range(len(identifiers)):
+            #     consts_for_postfix.append((identifiers[i], datatypes[i]))
+            # print('\n', postfix_code, '\n')
+            column_width = max(len(word) for row in postfix_code for word in row)  # padding
+            for row in postfix_code:
+                section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
+            section += ')\n\n'
+            file.write(section)
+
+
+            # file.write('\n\n')
+            # file.write(str(postfix_code))  # тимчасово записую туди сам список
         print(f"Postfix code збережено до {file_name}.postfix успішно.")
     except Exception as e:
         print(f"Помилка при збережені файла: {e}")
