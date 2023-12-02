@@ -62,9 +62,3 @@ func sum() {
         print(done)
     }
 } */
-
-// var k := five
-/* for k <= 10 {
-    print(k)
-    k := k + 1
-} */

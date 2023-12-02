@@ -804,6 +804,57 @@ def parse_for():
     parse_statementlist()
     parse_token('}', 'brack_op', '')
 
+def parse_for():
+    global current_lex_id, current_line
+    current_line, lex, tok = get_current_lexeme(current_lex_id)
+    back = 0
+    i = 0
+
+    # Знаходження початку циклу
+    while lex != '{':
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
+        current_lex_id += 1
+        back += 1
+        if lex == ';':
+            i += 1
+
+    current_lex_id -= back
+
+    # Перевірка умов циклу та трансляція
+    if i == 2:
+        # Отримання міток для переходів
+        m1 = create_label()
+        m2 = create_label()
+        m3 = create_label()
+
+        postfix_code.append(('JMP', 'jump', m1))
+        postfix_code.append((':', 'colon', m1))
+        parse_declarlist()
+        parse_token(';', 'punc', '')
+        if parse_expression() != 'boolean':
+            fail_parse('очікувався булевий вираз', current_line)
+        postfix_code.append(('JF', 'jf', m3))
+        parse_arithm_expression()
+        postfix_code.append(('JMP', 'jump', m2))
+        postfix_code.append((':', 'colon', m2))
+        current_line, lex, tok = get_current_lexeme(current_lex_id)
+        while lex != '{':
+            current_lex_id += 1
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
+    #else:
+    #    current_lex_id += 1
+    #
+        # Перевірка та трансляція булевого виразу
+    #        fail_parse('очікувався булевий вираз', current_line)
+    #    postfix_code.append(('JF', 'jf', m3))
+
+        parse_token('{', 'brack_op', '')
+        parse_statementlist()
+        parse_token('}', 'brack_op', '')
+        postfix_code.append(('JMP', 'jump', m1))
+        postfix_code.append((':', 'colon', m3))
+
+
 
 def get_current_lexeme (num_row) :
     num_line, lexeme, token, _ = table_of_symb[num_row]
