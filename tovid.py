@@ -771,6 +771,11 @@ def parse_if():
             set_value_label(m2)  # в табл. мiток
             postfix_code.append(m2)  # Трансляцiя
             postfix_code.append((':', 'colon'))
+        else:
+            set_value_label(m1)  # в табл. мiток
+            postfix_code.append(m1)
+            postfix_code.append((':', 'colon'))
+
     else:
         fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok))
 

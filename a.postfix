@@ -32,7 +32,8 @@
 
 .labels(
 	m1   54   
-	m2   65   
+	m3   65   
+	m2   67   
 )
 
 .code(
@@ -101,6 +102,8 @@
 	>=       rel_op   
 	m3       label    
 	JF       jf       
+	m3       label    
+	:        colon    
 	m2       label    
 	:        colon    
 )
