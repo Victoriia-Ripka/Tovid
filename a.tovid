@@ -7,7 +7,7 @@ func sum() {
 }
 // some
 func main() {
-	var int a := 1
+	var int a := 2
 	var float f
 	var b := true
 	// var b := false
@@ -18,7 +18,7 @@ func main() {
 	const int five := 5
 	const done := "Done!"
 	scanf(a, b)
-	f := (a^2^3) + 3 / 2
+	f := (a^3) + 3 / 2
 	b := (a+a) < five
 	print(a, f, b)
 

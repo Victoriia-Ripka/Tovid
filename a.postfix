@@ -14,12 +14,11 @@
 .constants(
 	10.1   float  
 	5.2    float  
-	1      int    
+	2      int    
 	10     int    
 	2i     complex
 	1+3i   complex
 	5      int    
-	2      int    
 	3      int    
 	15     int    
 	12     int    
@@ -32,8 +31,8 @@
 )
 
 .labels(
-	m1   55   
-	m2   66   
+	m1   54   
+	m2   65   
 )
 
 .code(
@@ -43,10 +42,10 @@
 	+        add_op   
 	:=       assign_op
 	a        l-val    
-	1        int      
+	2        int      
 	:=       assign_op
 	b        l-val    
-	true     keyword  
+	true     boolean  
 	:=       assign_op
 	k        l-val    
 	10       int      
@@ -61,11 +60,10 @@
 	5        int      
 	:=       assign_op
 	done     l-val    
+	"Done!"  string   
 	:=       assign_op
 	f        l-val    
 	a        r-val    
-	2        int      
-	^        pow_op   
 	3        int      
 	^        pow_op   
 	3        int      

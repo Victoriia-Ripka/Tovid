@@ -1,7 +1,7 @@
 # Tovid language lexer and parser
 from postfixMachine import PSM
 
-token_table = {'true': 'keyword', 'false': 'keyword', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
+token_table = {'true': 'boolean', 'false': 'boolean', 'const': 'keyword', 'var': 'keyword', 'func': 'keyword',
                'return': 'keyword', 'if': 'keyword', 'else': 'keyword', 'for': 'keyword', 'range': 'keyword',
                'break': 'keyword', 'import': 'keyword', 'package': 'keyword', 'nil': 'keyword', 'iota': 'keyword',
                'int': 'keyword', 'float': 'keyword', 'complex': 'keyword', 'string': 'keyword', 'boolean': 'keyword',
@@ -119,7 +119,7 @@ def processing():
                     print('{0:<3d} {1:<10s} {2:<10s} {3:<2d} '.format(num_line, lexeme, token, index[1]))
                 table_of_symb[len(table_of_symb)+1] = (num_line, lexeme, token, index)
             else:  # якщо keyword
-                # print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
+                print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
                 table_of_symb[len(table_of_symb)+1] = (num_line, lexeme, token, '')
             lexeme = ''
             num_char = put_char_back(num_char)  # зiрочка
@@ -129,7 +129,7 @@ def processing():
         else:
             lexeme += char
             token = get_token(state, lexeme)
-            # print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
+            print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
             table_of_symb[len(table_of_symb) + 1] = (num_line, lexeme, token, '')
             lexeme = ''
             state = init_state
@@ -680,9 +680,11 @@ def parse_factor():
         postfix_code_gen('const', (lex, tok))
     elif tok == 'string':
         factor_type = 'string'
+        postfix_code_gen('string', (lex, tok))
         # все одно вилетить на функції parse_chunk()
     elif lex in bool_expr_results:
         factor_type = 'boolean'
+        postfix_code_gen('boolean', (lex, tok))
         # все одно вилетить на функції parse_chunk()
     elif lex == '(':
         current_lex_id += 1
@@ -773,36 +775,37 @@ def parse_if():
         fail_parse('невiдповiднiсть токенiв', (current_line, lex, tok))
 
 
-def parse_for():
-    global current_lex_id, current_line
-    current_line, lex, tok = get_current_lexeme(current_lex_id)
-    back = 0
-    i = 0
-    while lex != '{':
-        current_line, lex, tok = get_current_lexeme(current_lex_id)
-        current_lex_id += 1
-        back+=1
-        if lex == ';':
-            i+=1
-    current_lex_id -= back
-    if i == 2:
-        parse_declarlist()
-        parse_token(';', 'punc', '')
-        if parse_expression() != 'boolean':
-            fail_parse('очікувався булевий вираз', current_line)
-        parse_token(';', 'punc', '')
-        parse_arithm_expression()
-        current_line, lex, tok = get_current_lexeme(current_lex_id)
-        while lex != '{':
-            current_lex_id += 1
-            current_line, lex, tok = get_current_lexeme(current_lex_id)
-    else:
-        current_lex_id += 1
-        if parse_expression() != 'boolean':
-            fail_parse('очікувався булевий вираз', current_line)
-    parse_token('{', 'brack_op', '')
-    parse_statementlist()
-    parse_token('}', 'brack_op', '')
+# def parse_for():
+#     global current_lex_id, current_line
+#     current_line, lex, tok = get_current_lexeme(current_lex_id)
+#     back = 0
+#     i = 0
+#     while lex != '{':
+#         current_line, lex, tok = get_current_lexeme(current_lex_id)
+#         current_lex_id += 1
+#         back+=1
+#         if lex == ';':
+#             i+=1
+#     current_lex_id -= back
+#     if i == 2:
+#         parse_declarlist()
+#         parse_token(';', 'punc', '')
+#         if parse_expression() != 'boolean':
+#             fail_parse('очікувався булевий вираз', current_line)
+#         parse_token(';', 'punc', '')
+#         parse_arithm_expression()
+#         current_line, lex, tok = get_current_lexeme(current_lex_id)
+#         while lex != '{':
+#             current_lex_id += 1
+#             current_line, lex, tok = get_current_lexeme(current_lex_id)
+#     else:
+#         current_lex_id += 1
+#         if parse_expression() != 'boolean':
+#             fail_parse('очікувався булевий вираз', current_line)
+#     parse_token('{', 'brack_op', '')
+#     parse_statementlist()
+#     parse_token('}', 'brack_op', '')
+
 
 def parse_for():
     global current_lex_id, current_line
@@ -987,7 +990,9 @@ def serv():
     print(f"pm1.tableOfId:\n {pm.tableOfVar}\n")
     print(f"pm1.tableOfLabel:\n {pm.tableOfLabel}\n")
     print(f"pm1.tableOfConst:\n {pm.tableOfConst}\n")
-    print(f"pm1.postfix_code:\n {pm.postfixCode}\n")
+    print(f"pm1.tableOfNamedConst:\n {pm.tableOfNamedConst}\n")
+    print(f"pm1.postfixCode:\n {pm.postfixCode}\n")
+    print(postfix_code)
 
 
 # Виклик функцiї savepostfix_code() приводить до побудови постфiкс-коду
@@ -1142,5 +1147,5 @@ def create_label():
 compile_to_postfix()
 
 
-pm.load_postfix_file(f'{file_name}')
+pm.load_postfix_file(file_name)
 pm.postfix_exec()

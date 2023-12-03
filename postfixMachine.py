@@ -119,16 +119,21 @@ class PSM:             # Postfix Stack Machine
                     val = int(item1)
                 elif item2 == "float":
                     val = float(item1)
-                elif item2 == "boolean":
-                    val = item1
-                elif item2 == 'string':
-                    val = str(item1)
-                table[item1] = (indx, item2, 'val')  # temporarily
+                elif item2 == "complex":
+                    try:
+                        val = complex(item1.replace('i', 'j'))
+                    except ValueError:
+                        val = complex('0+'+item1.replace('i', 'j'))
+                # elif item2 == "boolean":
+                #     val = item1
+                # elif item2 == 'string':
+                #     val = str(item1)
+                table[item1] = (indx, item2, val)  # temporarily
 
             if section == "NamedConstDecl":
                 table = self.tableOfNamedConst
                 indx = len(table) + 1
-                table[item1] = (indx, item2, item1)  # val_undef замінити, іменована константа не може не мати значення
+                table[item1] = (indx, item2, 'to_be_clarified')  # val_undef замінити, іменована константа не може не мати значення
 
             if section == "LblDecl":
                 table = self.tableOfLabel
@@ -149,19 +154,19 @@ class PSM:             # Postfix Stack Machine
             while self.numInstr < self.maxNumbInstr:
                 self.stack.print()
                 lex, tok = self.postfixCode[self.numInstr]
-                if tok in ('int', 'float', 'l-val', 'r-val', 'label', 'bool'):
+                if tok in ('int', 'float', 'complex', 'string', 'l-val', 'r-val', 'label', 'boolean'):
                     self.stack.push((lex, tok))
-                    self.numInstr = self.numInstr + 1
+                    self.numInstr += 1
                 elif tok in ('jump', 'jf', 'colon'):
                     self.do_jumps(lex, tok)
                 elif tok == 'out_op':
                     id, _ = self.stack.pop()
-                    self.numInstr = self.numInstr + 1
+                    self.numInstr += 1
                     print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
                 else:
                     print(f'-=-=-=========({lex},{tok})  numInstr={self.numInstr}')
                     self.do_it(lex, tok)
-                    self.numInstr = self.numInstr + 1
+                    self.numInstr += 1
             self.stack.print()
         except PSMExcept as e:
             # Повідомити про факт виявлення помилки
@@ -222,58 +227,100 @@ class PSM:             # Postfix Stack Machine
 
     def get_val_type_operand(self, lex, tok):
         if tok == "r-val":
-            if self.tableOfVar[lex][2] == 'val_undef':
-                raise PSMExcept(8)  # 'неініційована змінна', (lexL,tableOfVar[lexL], (lexL,tokL
-            else:
-                type, val = (self.tableOfVar[lex][1], self.tableOfVar[lex][2])
+            if lex in self.tableOfVar.keys():
+                if self.tableOfVar[lex][2] == 'val_undef':
+                    raise PSMExcept(8)  # 'неініційована змінна', (lexL,tableOfVar[lexL], (lexL,tokL
+                else:
+                    type, val = (self.tableOfVar[lex][1], self.tableOfVar[lex][2])
+            elif lex in self.tableOfNamedConst.keys():
+                type, val = (self.tableOfNamedConst[lex][1], self.tableOfNamedConst[lex][2])
         elif tok == 'int':
             val = int(lex)
             type = tok
         elif tok == 'float':
             val = float(lex)
             type = tok
-        elif tok == 'bool':
+        elif tok == 'complex':
+            val = complex(lex.replace('i', 'j'))
+            type = tok
+        elif tok == 'boolean':
             val = lex
             type = tok
         return (type, val)
 
-
     def apply_operator(self, lex_type_val_l, arth_bool_op, lex_type_val_r):
         (lexL, typeL, valL) = lex_type_val_l
         (lexR, typeR, valR) = lex_type_val_r
-        if typeL != typeR:
-            raise PSMExcept(9)  # типи операндів відрізняються
-        elif arth_bool_op == '+':
-            value = valL + valR
-        elif arth_bool_op == '-':
-            value = valL - valR
-        elif arth_bool_op == '*':
-            value = valL * valR
-        elif arth_bool_op == '/' and valR == 0:
-            raise PSMExcept(10)  # ділення на нуль
-        elif arth_bool_op == '/' and typeL == 'float':
-            value = valL / valR
-        elif arth_bool_op == '/' and typeL == 'int':
-            value = int(valL / valR)
-        elif arth_bool_op == '<':
-            value = str(valL < valR).lower()
-        elif arth_bool_op == '<=':
-            value = str(valL <= valR).lower()
-        elif arth_bool_op == '>':
-            value = str(valL > valR).lower()
-        elif arth_bool_op == '>=':
-            value = str(valL >= valR).lower()
-        elif arth_bool_op == '=':
-            value = str(valL == valR).lower()
-        elif arth_bool_op == '<>':
-            value = str(valL != valR).lower()
+        resulting_type = typeL
+        # if typeL != typeR:
+        #     raise PSMExcept(9)  # типи операндів відрізняються
+        if arth_bool_op in ('+', '-'):
+            if typeL == typeR and typeL == 'int':
+                resulting_type = typeL
+            elif typeL == 'boolean' or typeR == 'boolean':
+                raise PSMExcept(9)
+            elif typeL == 'string' or typeR == 'string':
+                raise PSMExcept(9)
+            elif typeL == 'complex' or typeR == 'complex':
+                resulting_type = 'complex'
+            else:
+                resulting_type = 'float'
+            if arth_bool_op == '+':
+                # print(valL, type(valL), valR, type(valR))
+                value = valL + valR
+            elif arth_bool_op == '-':
+                value = valL - valR
+        elif arth_bool_op in ('*', '/'):
+            if typeL in ('boolean', 'string') or typeR in ('boolean', 'string'):
+                raise PSMExcept(9)
+            if arth_bool_op == '*':
+                if typeL == typeR and typeL == 'int':
+                    resulting_type = typeL
+                elif typeL == 'complex' or typeR == 'complex':
+                    resulting_type = 'complex'
+                else:
+                    resulting_type = 'float'
+                value = valL * valR
+            elif arth_bool_op == '/':
+                if typeL == 'complex' or typeR == 'complex':
+                    resulting_type = 'complex'
+                else:
+                    resulting_type = 'float'
+                if valR == 0:
+                    raise PSMExcept(10)  # ділення на нуль
+                else:
+                    value = valL / valR
+        elif arth_bool_op == '^':
+            if typeL in ('boolean', 'string', 'complex') or typeR in ('boolean', 'string', 'complex'):
+                raise PSMExcept(9)
+            resulting_type = 'float'
+            value = pow(valL, valR)
+        # elif arth_bool_op == '/':  # and typeL == 'float':
+
+        # elif arth_bool_op == '/' and typeL == 'int':
+        #     value = int(valL / valR)
+        elif arth_bool_op in ('<', '<=', '>', '>=', '==', '!='):
+            if typeL in ('complex', 'string') or typeR in ('complex', 'string'):
+                raise PSMExcept(9)
+            if arth_bool_op == '<':
+                value = str(valL < valR).lower()
+            elif arth_bool_op == '<=':
+                value = str(valL <= valR).lower()
+            elif arth_bool_op == '>':
+                value = str(valL > valR).lower()
+            elif arth_bool_op == '>=':
+                value = str(valL >= valR).lower()
+            elif arth_bool_op == '==':
+                value = str(valL == valR).lower()
+            elif arth_bool_op == '!=':
+                value = str(valL != valR).lower()
         else:
             pass
         # покласти результат на стек
-        if arth_bool_op in ('<', '<=', '>', '>=', '=', '<>'):
-            self.stack.push((str(value), 'bool'))
+        if arth_bool_op in ('<', '<=', '>', '>=', '==', '!='):
+            self.stack.push((str(value), 'boolean'))
         else:
-            self.stack.push((str(value), typeL))
+            self.stack.push((str(value), resulting_type))
 
 
 class PSMExcept(Exception):
@@ -284,9 +331,13 @@ class PSMExcept(Exception):
 def get_value(lex, tok):
     if tok == 'float':
         return float(lex)
+    elif tok == 'complex':
+        return complex(lex.replace('i', 'j'))
     elif tok == 'int':
         return int(lex)
-    elif tok == 'bool':
+    elif tok == 'string':
+        return str(lex)
+    elif tok == 'boolean':
         return lex
 
 # pm1 = PSM('a.tovid')
