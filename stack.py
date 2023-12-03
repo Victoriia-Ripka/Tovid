@@ -18,7 +18,7 @@ class Stack:
         sx = ""
         for x in self.items:
             sx += str(x) + '\t'
-        print('STACK:[ {0} '.format(sx))
+        print('Stack: [ {0} '.format(sx))
         return True
 
     def printTop3(self):
@@ -26,7 +26,7 @@ class Stack:
         for x in self.items[-3:]:
             sx += str(x) + '\t'
         if len(self.items)>3:
-             print('STACK:[ ..., {0} '.format(sx))
+             print('Stack: [ ..., {0} '.format(sx))
         else:
-             print('STACK:[ {0} '.format(sx))
+             print('Stack: [ {0} '.format(sx))
         return True

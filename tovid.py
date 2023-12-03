@@ -863,8 +863,7 @@ def parse_for():
         postfix_code.append((':', 'colon', m3))
 
 
-
-def get_current_lexeme (num_row) :
+def get_current_lexeme(num_row):
     num_line, lexeme, token, _ = table_of_symb[num_row]
     return num_line, lexeme, token
 
@@ -992,12 +991,12 @@ def fail_parse(str, tuple):
 
 
 def serv():
-    print(f"pm1.tableOfId:\n {pm.tableOfVar}\n")
+    print(f"pm1.tableOfVar:\n {pm.tableOfVar}\n")
     print(f"pm1.tableOfLabel:\n {pm.tableOfLabel}\n")
     print(f"pm1.tableOfConst:\n {pm.tableOfConst}\n")
     print(f"pm1.tableOfNamedConst:\n {pm.tableOfNamedConst}\n")
     print(f"pm1.postfixCode:\n {pm.postfixCode}\n")
-    print(postfix_code)
+    # print(postfix_code)
 
 
 # Виклик функцiї savepostfix_code() приводить до побудови постфiкс-коду
@@ -1065,7 +1064,7 @@ def save_postfix_code():
             # consts_for_postfix = []
             # for i in range(len(identifiers)):
             #     consts_for_postfix.append((identifiers[i], datatypes[i]))
-            print('\n', labels, '\n')
+            # print('\n', labels, '\n')
             column_width = max(len(str(word)) for row in labels for word in row) + 3  # padding
             for row in labels:
                 section += '\t' + ''.join(str(word).ljust(column_width) for word in row) + '\n'
@@ -1097,9 +1096,9 @@ def save_postfix_code():
 
             # file.write('\n\n')
             # file.write(str(postfix_code))  # тимчасово записую туди сам список
-        print(f"Postfix code збережено до {file_name}.postfix успішно.")
+        print(f"\nPostfix code збережено до файлу {file_name}.postfix")
     except Exception as e:
-        print(f"Помилка при збережені файла: {e}")
+        print(f"Помилка при збережені файлу: {e}")
 
 
 def postfix_code_gen(case, to_tran):
@@ -1115,16 +1114,42 @@ def postfix_code_gen(case, to_tran):
 
 
 def compile_to_postfix():
-  global len_table_of_symb, f_success, table_of_symb
-  f_success = lex()
-  if f_success == (True, 'Lexer'):
-    f_success = (False, 'Parser')
-    len_table_of_symb = len(table_of_symb)
-    f_success = parse_program()
-    if f_success == (True, 'Parser'):
-      serv()
-      save_postfix_code()
-  return f_success
+    global len_table_of_symb, f_success, table_of_symb
+    f_success = lex()
+    if f_success == (True, 'Lexer'):
+        f_success = (False, 'Parser')
+        len_table_of_symb = len(table_of_symb)
+        f_success = parse_program()
+        if f_success == (True, 'Parser'):
+            try:
+                save_postfix_code()
+            except SystemExit as error:
+                f_success = (False, 'Compiler')
+                print('\n\033[0m\033[1m\033[4mCompiler\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.
+                format(error))
+            else:
+                print('\n\033[0m\033[1m\033[4mCompiler\033[0m: \033[92mКомпіляція у постфікс завершена успішно\033[0m')
+                f_success = (True, 'Compiler')
+            # return f_success
+    return f_success
+
+
+def code_execution():
+    global f_success
+    f_success = compile_to_postfix()
+    if f_success == (True, 'Compiler'):
+        try:
+            pm.load_postfix_file(file_name)
+            pm.postfix_exec()
+        except SystemExit as error:
+            f_success = (False, 'Executor')
+            print('\033[0m\033[1m\033[4mExecutor\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.
+                  format(error))
+        else:
+            serv()
+            print('\033[0m\033[1m\033[4mExecutor\033[0m: \033[92mВиконання коду завершено успішно\033[0m')
+            f_success = (True, 'Executor')
+    return f_success
 
 
 def set_value_label(label):
@@ -1149,8 +1174,4 @@ def create_label():
     return (lexeme, tok)
 
 
-compile_to_postfix()
-
-
-pm.load_postfix_file(file_name)
-pm.postfix_exec()
+code_execution()  # compile_to_postfix() відбувається всередині

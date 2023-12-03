@@ -148,7 +148,7 @@ class PSM:             # Postfix Stack Machine
 
     def postfix_exec(self):
         """Виконує postfixCode"""
-        print('postfixExec:')
+        print('\npostfixExec:')
         self.maxNumbInstr = len(self.postfixCode)
         try:
             while self.numInstr < self.maxNumbInstr:
