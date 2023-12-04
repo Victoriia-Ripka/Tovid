@@ -771,6 +771,7 @@ def parse_if():
             set_value_label(m2)  # в табл. мiток
             postfix_code.append(m2)  # Трансляцiя
             postfix_code.append((':', 'colon'))
+
         else:
             set_value_label(m1)  # в табл. мiток
             postfix_code.append(m1)
@@ -835,16 +836,23 @@ def parse_for():
         m2 = create_label()
         m3 = create_label()
 
-        postfix_code.append(('JMP', 'jump', m1))
-        postfix_code.append((':', 'colon', m1))
+        postfix_code.append(m1)  # Трансляцiя
+        postfix_code.append(('JMP', 'jump'))#1
+        set_value_label(m1)  # в табл. мiток
+        postfix_code.append(m1)  # Трансляцiя
+        postfix_code.append((':', 'colon'))#1
         parse_declarlist()
         parse_token(';', 'punc', '')
         if parse_expression() != 'boolean':
             fail_parse('очікувався булевий вираз', current_line)
-        postfix_code.append(('JF', 'jf', m3))
+        postfix_code.append(m3)  # Трансляцiя
+        postfix_code.append(('JF', 'jf'))#3
         parse_arithm_expression()
-        postfix_code.append(('JMP', 'jump', m2))
-        postfix_code.append((':', 'colon', m2))
+        postfix_code.append(m2)  # Трансляцiя
+        postfix_code.append(('JMP', 'jump'))#2
+        set_value_label(m2)  # в табл. мiток
+        postfix_code.append(m2)  # Трансляцiя
+        postfix_code.append((':', 'colon'))#2
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         while lex != '{':
             current_lex_id += 1
@@ -859,8 +867,11 @@ def parse_for():
         parse_token('{', 'brack_op', '')
         parse_statementlist()
         parse_token('}', 'brack_op', '')
-        postfix_code.append(('JMP', 'jump', m1))
-        postfix_code.append((':', 'colon', m3))
+        postfix_code.append(m1)  # Трансляцiя
+        postfix_code.append(('JMP', 'jump'))#1
+        set_value_label(m3)  # в табл. мiток
+        postfix_code.append(m3)  # Трансляцiя
+        postfix_code.append((':', 'colon'))#3
 
 
 def get_current_lexeme(num_row):
