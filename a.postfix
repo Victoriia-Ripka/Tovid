@@ -29,14 +29,22 @@
 	h      float  
 	five   int    
 	done   string 
+	m      int    
 )
 
 .labels(
-	m1   67   
-	m4   85   
-	m5   87   
-	m3   89   
-	m2   91   
+	m1    54    
+	m4    72    
+	m5    74    
+	m3    76    
+	m2    78    
+	m6    82    
+	m7    93    
+	m10   103   
+	m11   109   
+	m9    113   
+	m12   115   
+	m8    119   
 )
 
 .code(
@@ -132,6 +140,47 @@
 	m3       label    
 	:        colon    
 	m2       label    
+	:        colon    
+	m6       label    
+	JMP      jump     
+	m6       label    
+	:        colon    
+	m        l-val    
+	five     r-val    
+	:=       assign_op
+	m        r-val    
+	>=       rel_op   
+	m8       label    
+	JF       jf       
+	m7       label    
+	JMP      jump     
+	m7       label    
+	:        colon    
+	m        r-val    
+	!=       rel_op   
+	m9       label    
+	JF       jf       
+	m        r-val    
+	!=       rel_op   
+	m10      label    
+	JF       jf       
+	m10      label    
+	:        colon    
+	m        r-val    
+	!=       rel_op   
+	m11      label    
+	JF       jf       
+	m11      label    
+	:        colon    
+	m12      label    
+	JMP      jump     
+	m9       label    
+	:        colon    
+	m12      label    
+	:        colon    
+	m6       label    
+	JMP      jump     
+	m8       label    
 	:        colon    
 )
 
