@@ -3,8 +3,8 @@
 
 .vars(
 	a      int    
-	f      float  
 	b      boolean
+	f      float  
 	k      int    
 	c1     complex
 	c2     complex
@@ -15,11 +15,11 @@
 	10.1   float  
 	5.2    float  
 	2      int    
+	3      int    
 	10     int    
 	2i     complex
 	1+3i   complex
 	5      int    
-	3      int    
 	15     int    
 	8      int    
 	12     int    
@@ -32,11 +32,11 @@
 )
 
 .labels(
-	m1   54   
-	m4   72   
-	m5   74   
-	m3   76   
-	m2   78   
+	m1   67   
+	m4   85   
+	m5   87   
+	m3   89   
+	m2   91   
 )
 
 .code(
@@ -47,9 +47,19 @@
 	:=       assign_op
 	a        l-val    
 	2        int      
+	-        unary_op 
+	:=       assign_op
+	a        l-val    
+	a        r-val    
+	3        int      
+	+        add_op   
 	:=       assign_op
 	b        l-val    
 	true     boolean  
+	:=       assign_op
+	b        l-val    
+	b        r-val    
+	-        unary_op 
 	:=       assign_op
 	k        l-val    
 	10       int      
@@ -59,6 +69,7 @@
 	:=       assign_op
 	c2       l-val    
 	1+3i     complex  
+	-        unary_op 
 	:=       assign_op
 	five     l-val    
 	5        int      
@@ -68,7 +79,9 @@
 	:=       assign_op
 	f        l-val    
 	a        r-val    
+	2        int      
 	3        int      
+	^        pow_op   
 	^        pow_op   
 	3        int      
 	2        int      

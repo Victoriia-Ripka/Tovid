@@ -24,7 +24,9 @@ class PSM:             # Postfix Stack Machine
                      2: "тут очікувався хоч один порожній рядок",
                      3: "тут очікувався заголовок секції",
                      4: "очікувалось два елемента в рядку",
-                     8: "неініційована змінна"
+                     8: "неініційована змінна",
+                     9: "типи операндів не прийнятні для виконуваної операції",
+                     10: "невідомий унарний оператор"
                      }
       self.stack = Stack()
       self.numInstr = 0
@@ -190,10 +192,13 @@ class PSM:             # Postfix Stack Machine
         print(f'+=+=+=========({lex},{tok})  numInstr={ni} nextNumInstr={self.numInstr}')
 
     def do_it(self, lex, tok):
-        # зняти з вершини стека ідентифікатор (правий операнд)
+        # зняти з вершини стека запис (правий операнд)
         # self.stack.print()
         (lexR, tokR) = self.stack.pop()
-        # зняти з вершини стека запис (лівий операнд)
+        if tok == 'unary_op':  # якщо унарний '+' або '-', то лівий операнд знімати вже не треба буде
+            self.processing_arith_unary_op(lex, (lexR, tokR))
+            return
+        # зняти з вершини стека ідентифікатор (лівий операнд)
         (lexL, tokL) = self.stack.pop()
 
         if (lex, tok) == (':=', 'assign_op'):
@@ -216,14 +221,19 @@ class PSM:             # Postfix Stack Machine
                 else:
                     self.tableOfNamedConst[lexL] = (self.tableOfNamedConst[lexL][0], tokR, get_value(lexR, tokR))
         else:
-            self.processing_arth_bool_op((lexL, tokL), lex, (lexR, tokR))
+            self.processing_arith_bool_binary_op((lexL, tokL), lex, (lexR, tokR))
 
-    def processing_arth_bool_op(self, lex_tok_l, arth_bool_op, lex_tok_r):
+    def processing_arith_unary_op(self, arth_bool_op, lex_tok_r):
+        (lexR, tokR) = lex_tok_r
+        type_r, val_r = self.get_val_type_operand(lexR, tokR)
+        self.apply_unary_operator(arth_bool_op, (lexR, type_r, val_r))
+
+    def processing_arith_bool_binary_op(self, lex_tok_l, arth_bool_op, lex_tok_r):
         (lexL, tokL) = lex_tok_l
         (lexR, tokR) = lex_tok_r
         type_l, val_l = self.get_val_type_operand(lexL, tokL)
         type_r, val_r = self.get_val_type_operand(lexR, tokR)
-        self.apply_operator((lexL, type_l, val_l), arth_bool_op, (lexR, type_r, val_r))
+        self.apply_binary_operator((lexL, type_l, val_l), arth_bool_op, (lexR, type_r, val_r))
 
     def get_val_type_operand(self, lex, tok):
         if tok == "r-val":
@@ -248,7 +258,29 @@ class PSM:             # Postfix Stack Machine
             type = tok
         return (type, val)
 
-    def apply_operator(self, lex_type_val_l, arth_bool_op, lex_type_val_r):
+    def apply_unary_operator(self, unary_op, lex_type_val_r):
+        (lexR, typeR, valR) = lex_type_val_r
+        if unary_op in ('+', '-'):  # про всяк випадок, якщо в мову будуть додаватися факторіал чи інші унарні оператори
+            if typeR == 'string':
+                raise PSMExcept(9)
+            if unary_op == '-':
+                if typeR in ('int', 'float', 'complex'):
+                    print(lex_type_val_r)
+                    value = -valR  # інверсія
+                elif typeR == 'boolean':
+                    if valR == 'true':
+                        value = 'false'
+                    elif valR == 'false':
+                        value = 'true'
+                else:
+                    raise PSMExcept(9)
+            elif unary_op == '+':
+                value = valR  # нічого не робимо
+        else:
+            raise PSMExcept(10)
+        self.stack.push((str(value), typeR))
+
+    def apply_binary_operator(self, lex_type_val_l, arth_bool_op, lex_type_val_r):
         (lexL, typeL, valL) = lex_type_val_l
         (lexR, typeR, valR) = lex_type_val_r
         resulting_type = typeL

@@ -559,11 +559,16 @@ def parse_expression():
 def parse_arithm_expression():
     global current_lex_id, current_line
     current_line, lex, tok = get_current_lexeme(current_lex_id)
+    unary_sign_present = False
     if tok == 'add_op':
+        unary_sign_present = True
+        unary_sign = lex
         current_lex_id += 1
 
     left_type = parse_term()
     result_type = left_type
+    if unary_sign_present:
+        postfix_code_gen(unary_sign, (unary_sign, 'unary_op'))
     finish = False
 
     while not finish:
@@ -651,7 +656,7 @@ def parse_chunk():
         else:
             if tok == 'pow_op':
                 current_lex_id += 1
-                right_type = parse_factor()
+                right_type = parse_chunk()
                 if left_type == 'boolean' or right_type == 'boolean':
                     fail_parse('невідповідність типів', (current_line, left_type, right_type))
                 elif left_type == 'string' or right_type == 'string':

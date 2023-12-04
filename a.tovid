@@ -7,10 +7,14 @@ func sum() {
 }
 // some
 func main() {
-	var int a := 2
-	var float f
+
+	var int a := -2
+	a := a + 3
+
 	var b := true
-	// var b := false
+	b := -b
+
+    var float f
 	var k := 10
 	var complex c1 := 2i
 	var complex c2 := -1+3i
@@ -18,7 +22,7 @@ func main() {
 	const int five := 5
 	const done := "Done!"
 	scanf(a, b)
-	f := (a^3) + 3 / 2
+	f := (a^2^3) + 3 / 2
 	b := (a+a) < five
 	print(a, f, b)
 
