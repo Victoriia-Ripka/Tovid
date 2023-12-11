@@ -487,14 +487,14 @@ def parse_declarlist():
             postfix_code_gen(':=', (':=', 'assign_op'))
             if datatype_is_declared:
                 if declared_datatype == value_datatype:
-                    if keyword == 'var':
+                    if keyword == 'var' or keyword == 'for':
                         table_of_var[current_id] = (index, declared_datatype, 'assigned')
                     else:
                         table_of_named_const[current_id] = (index, declared_datatype)
                 else:
                     fail_parse('значення змінної не відповідає оголошеному типу', (num_line_s, current_id, 'ident'))
             else:
-                if keyword == 'var':
+                if keyword == 'var' or keyword == 'for':
                     table_of_var[current_id] = (index, value_datatype, 'assigned')
                 else:
                     table_of_named_const[current_id] = (index, value_datatype)
@@ -511,6 +511,7 @@ def parse_declarlist():
                 if keyword == 'var':
                     table_of_var[current_id] = (index, declared_datatype, 'undefined')
                 else:
+                    print(lex + '<---')
                     table_of_named_const[current_id] = (index, declared_datatype)
     else:
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
@@ -1182,6 +1183,7 @@ def create_label():
     value = table_of_labels.get(lexeme)
     if not value:
         table_of_labels[lexeme] = 'val_undef'
+        print('<-----1')
         tok = 'label'  # # #
     else:
         tok = 'Конфлiкт мiток'

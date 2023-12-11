@@ -9,6 +9,7 @@
 	c1     complex
 	c2     complex
 	c3     complex
+	m      int    
 )
 
 .constants(
@@ -29,22 +30,21 @@
 	h      float  
 	five   int    
 	done   string 
-	m      int    
 )
 
 .labels(
-	m1    54    
-	m4    72    
-	m5    74    
-	m3    76    
-	m2    78    
-	m6    82    
-	m7    93    
-	m10   103   
-	m11   109   
-	m9    113   
-	m12   115   
-	m8    119   
+	m1    67    
+	m4    85    
+	m5    87    
+	m3    89    
+	m2    91    
+	m6    95    
+	m7    106   
+	m10   116   
+	m11   122   
+	m9    126   
+	m12   128   
+	m8    132   
 )
 
 .code(
