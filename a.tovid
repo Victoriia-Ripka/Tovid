@@ -21,7 +21,7 @@ func main() {
 	var complex c3
 	const int five := 5
 	const done := "Done!"
-	scanf(a, b)
+	// scanf(a, b)
 	f := (a^2^3) + 3 / 2
 	b := (a+a) < five
 	print(a, f, b)

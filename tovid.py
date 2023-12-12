@@ -416,16 +416,20 @@ def parse_scanf_print(lexeme, token):
         _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
         while lex != ')':
             if lexeme == 'scanf':
-                if lex in table_of_id.keys():
+                if lex in table_of_var.keys():  # зчитувати для переприсвоєння можна лише змінну
+                    postfix_code_gen('rval', (lex, 'rval'))
+                    postfix_code_gen('in_op', ('IN', 'in_op'))
                     current_lex_id += 1
                     current_line, lex, tok = get_current_lexeme(current_lex_id)
-                    # table_of_var[lex] = (index, old_type, 'assigned')
-                    # в таблиці змінних зробити присвоєння до змінної таке, що було отримано зц скану
+                    # table_of_var[lex] = (index, old_type, 'assigned')  # буде виконано на PSM
+                    # в таблиці змінних зробити присвоєння до змінної таке, що було отримано зі скану
                 else:
                     fail_parse('очікувався параметр', (current_line, lex, tok))
                 if lex == ',':
                     _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
-                    if lex1 in table_of_id.keys():
+                    if lex1 in table_of_var.keys():
+                        postfix_code_gen('rval', (lex1, 'rval'))
+                        postfix_code_gen('in_op', ('IN', 'in_op'))
                         current_lex_id += 1
                         current_line, lex, tok = get_current_lexeme(current_lex_id)
                     else:
@@ -435,6 +439,8 @@ def parse_scanf_print(lexeme, token):
                     if lex in table_of_var.keys():
                         if table_of_var[lex][2] == 'undefined':
                             fail_parse('використання undefined змінної', (current_line, lex, tok))
+                    postfix_code_gen('rval', (lex, 'rval'))
+                    postfix_code_gen('out_op', ('OUT', 'out_op'))
                     current_lex_id += 1
                     current_line, lex, tok = get_current_lexeme(current_lex_id)
                 else:
@@ -445,6 +451,8 @@ def parse_scanf_print(lexeme, token):
                         if lex in table_of_var.keys():
                             if table_of_var[lex1][2] == 'undefined':
                                 fail_parse('використання undefined змінної', (current_line, lex1, tok1))
+                        postfix_code_gen('rval', (lex1, 'rval'))
+                        postfix_code_gen('out_op', ('OUT', 'out_op'))
                         current_lex_id += 1
                         current_line, lex, tok = get_current_lexeme(current_lex_id)
                     else:

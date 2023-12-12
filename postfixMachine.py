@@ -135,7 +135,7 @@ class PSM:             # Postfix Stack Machine
             if section == "NamedConstDecl":
                 table = self.tableOfNamedConst
                 indx = len(table) + 1
-                table[item1] = (indx, item2, 'to_be_clarified')  # val_undef замінити, іменована константа не може не мати значення
+                table[item1] = (indx, item2, 'to_be_clarified')
 
             if section == "LblDecl":
                 table = self.tableOfLabel
@@ -162,9 +162,25 @@ class PSM:             # Postfix Stack Machine
                 elif tok in ('jump', 'jf', 'colon'):
                     self.do_jumps(lex, tok)
                 elif tok == 'out_op':
-                    id, _ = self.stack.pop()
-                    self.numInstr += 1
-                    print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
+                        id, _ = self.stack.pop()
+                        self.numInstr += 1
+                        if id in self.tableOfVar.keys():
+                            print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
+                        elif id in self.tableOfNamedConst.keys():
+                            print(f'-------------- OUT: {id}={self.tableOfNamedConst[id][2]}')
+                        else:
+                            print(f'-------------- OUT: {id}')
+                elif tok == 'in_op':
+                        user_input = input()
+                        print(f'-------------- IN: {user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
+                        self.stack.push((user_input, 'string'))  # покамість, треба буде підключити лексичний аналіз вводу
+                                                              # або знайти альтернативи, наприклад пайтонівське порівняння
+                        self.do_it(':=', 'assign_op')
+                        self.numInstr += 1
+                        # if id in self.tableOfVar.keys():
+                        #     self.tableOfVar[lexL] = (self.tableOfVar[lexL][0], tokR, get_value(lexR, tokR))
+                        # else:
+                        #     self.tableOfNamedConst[lexL][0], tokR, get_value(lexR, tokR))
                 else:
                     print(f'-=-=-=========({lex},{tok})  numInstr={self.numInstr}')
                     self.do_it(lex, tok)
@@ -256,7 +272,7 @@ class PSM:             # Postfix Stack Machine
         elif tok == 'boolean':
             val = lex
             type = tok
-        return (type, val)
+        return type, val
 
     def apply_unary_operator(self, unary_op, lex_type_val_r):
         (lexR, typeR, valR) = lex_type_val_r
