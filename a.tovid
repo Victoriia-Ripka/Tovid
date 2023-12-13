@@ -58,15 +58,9 @@ func sum() {
     return a
 }
 
-for m := five; m >= nil; m + 12 {
-    if m != nil {
+for m := 5; m >= 0; m := m - 1 {
+    if m > 0 {
         print("Not yet!")
-        if m != nil {
-            print("Not yet!")
-        }
-        if m != nil {
-            print("Not yet!")
-        }
     }
     else {
         print(done)
