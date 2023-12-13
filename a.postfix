@@ -33,18 +33,18 @@
 )
 
 .labels(
-	m1    85    
-	m4    103   
-	m5    105   
-	m3    107   
-	m2    109   
-	m6    113   
-	m7    124   
-	m10   138   
-	m11   146   
-	m9    150   
-	m12   154   
-	m8    158   
+	m1    79    
+	m4    97    
+	m5    99    
+	m3    101   
+	m2    103   
+	m6    107   
+	m7    118   
+	m10   132   
+	m11   140   
+	m9    144   
+	m12   148   
+	m8    152   
 )
 
 .code(
@@ -107,10 +107,6 @@
 	OUT       out_op    
 	f         r-val     
 	OUT       out_op    
-	f         r-val     
-	OUT       out_op    
-	b         r-val     
-	OUT       out_op    
 	b         r-val     
 	OUT       out_op    
 	c3        l-val     
@@ -121,8 +117,6 @@
 	c3        r-val     
 	OUT       out_op    
 	"\n"      r-val     
-	OUT       out_op    
-	done      r-val     
 	OUT       out_op    
 	done      r-val     
 	OUT       out_op    

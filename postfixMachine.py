@@ -163,6 +163,7 @@ class PSM:             # Postfix Stack Machine
                     self.do_jumps(lex, tok)
                 elif tok == 'out_op':
                         id, _ = self.stack.pop()
+                        print('завдання: вивести ', id)
                         self.numInstr += 1
                         if id in self.tableOfVar.keys():
                             print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
@@ -173,8 +174,7 @@ class PSM:             # Postfix Stack Machine
                 elif tok == 'in_op':
                         user_input = input()
                         print(f'-------------- IN: {user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
-                        self.stack.push((user_input, 'string'))  # покамість, треба буде підключити лексичний аналіз вводу
-                                                              # або знайти альтернативи, наприклад пайтонівське порівняння
+                        self.stack.push((user_input, 'string'))
                         self.do_it(':=', 'assign_op')
                         self.numInstr += 1
                         # if id in self.tableOfVar.keys():
