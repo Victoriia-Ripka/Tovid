@@ -511,7 +511,6 @@ def parse_declarlist():
                 if keyword == 'var':
                     table_of_var[current_id] = (index, declared_datatype, 'undefined')
                 else:
-                    print(lex + '<---')
                     table_of_named_const[current_id] = (index, declared_datatype)
     else:
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
@@ -824,9 +823,36 @@ def parse_for():
     current_line, lex, tok = get_current_lexeme(current_lex_id)
     back = 0
     i = 0
+    znak = ''
+    znak_2 = ''
+    start_znach = 0
+    last_znach = 0
+    variable_name = ''
+    to_do = 0
+    step = 0
 
     # Знаходження початку циклу
     while lex != '{':
+        if i == 0 and lex == ':=':
+            current_line, lex, tok = get_current_lexeme(current_lex_id-2)
+            variable_name = lex
+            current_line, lex, tok = get_current_lexeme(current_lex_id)
+            start_znach = int(lex)
+        if i == 1 and tok == 'rel_op':
+            current_line, lex, tok = get_current_lexeme(current_lex_id-1)
+            znak = lex
+            current_line, lex, tok = get_current_lexeme(current_lex_id-2)
+            if lex == variable_name:
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
+                to_do = int(lex)
+
+        if i == 2 and lex==':=':
+            current_line, lex, tok = get_current_lexeme(current_lex_id+1)
+            znak_2 = lex
+            current_line, lex, tok = get_current_lexeme(current_lex_id+2)
+            step = int(lex)
+
+
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         current_lex_id += 1
         back += 1
@@ -834,6 +860,11 @@ def parse_for():
             i += 1
 
     current_lex_id -= back
+    if znak_2 == '+':
+        last_znach = start_znach + to_do * step
+    if znak_2 == '-':
+        last_znach = start_znach - (start_znach - to_do) * step
+
 
     # Перевірка умов циклу та трансляція
     if i == 2:
@@ -869,7 +900,16 @@ def parse_for():
         postfix_code.append(('JMP', 'jump'))  # 3
 
         parse_token('{', 'brack_op', '')
-        parse_statementlist()
+
+
+
+        if znak == '<' or znak == '<=':
+            for i in range(start_znach,last_znach):
+                parse_statementlist()
+        else:
+            for i in range(last_znach,start_znach):
+                parse_statementlist()
+
         parse_token('}', 'brack_op', '')
         postfix_code.append(m1)  # Трансляцiя
         postfix_code.append(('JMP', 'jump'))  # 1
