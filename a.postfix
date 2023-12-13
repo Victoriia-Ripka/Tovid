@@ -23,7 +23,8 @@
 	5      int    
 	15     int    
 	8      int    
-	12     int    
+	0      int    
+	1      int    
 )
 
 .named_constants(
@@ -39,12 +40,10 @@
 	m3    89    
 	m2    91    
 	m6    95    
-	m7    106   
-	m10   116   
-	m11   122   
-	m9    126   
-	m12   128   
-	m8    132   
+	m7    107   
+	m9    118   
+	m10   120   
+	m8    124   
 )
 
 .code(
@@ -146,9 +145,10 @@
 	m6       label    
 	:        colon    
 	m        l-val    
-	five     r-val    
+	5        int      
 	:=       assign_op
 	m        r-val    
+	0        int      
 	>=       rel_op   
 	m8       label    
 	JF       jf       
@@ -156,27 +156,18 @@
 	JMP      jump     
 	m7       label    
 	:        colon    
+	m8       label    
+	JMP      jump     
 	m        r-val    
-	!=       rel_op   
+	0        int      
+	>        rel_op   
 	m9       label    
 	JF       jf       
-	m        r-val    
-	!=       rel_op   
 	m10      label    
-	JF       jf       
-	m10      label    
-	:        colon    
-	m        r-val    
-	!=       rel_op   
-	m11      label    
-	JF       jf       
-	m11      label    
-	:        colon    
-	m12      label    
 	JMP      jump     
 	m9       label    
 	:        colon    
-	m12      label    
+	m10      label    
 	:        colon    
 	m6       label    
 	JMP      jump     

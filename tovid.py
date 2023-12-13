@@ -843,41 +843,39 @@ def parse_for():
         m3 = create_label()
 
         postfix_code.append(m1)  # Трансляцiя
-        postfix_code.append(('JMP', 'jump'))#1
+        postfix_code.append(('JMP', 'jump'))  # 1
         set_value_label(m1)  # в табл. мiток
         postfix_code.append(m1)  # Трансляцiя
-        postfix_code.append((':', 'colon'))#1
+        postfix_code.append((':', 'colon'))  # 1
         parse_declarlist()
         parse_token(';', 'punc', '')
         if parse_expression() != 'boolean':
             fail_parse('очікувався булевий вираз', current_line)
         postfix_code.append(m3)  # Трансляцiя
-        postfix_code.append(('JF', 'jf'))#3
+        postfix_code.append(('JF', 'jf'))  # 3
         parse_arithm_expression()
         postfix_code.append(m2)  # Трансляцiя
-        postfix_code.append(('JMP', 'jump'))#2
+        postfix_code.append(('JMP', 'jump'))  # 2
         set_value_label(m2)  # в табл. мiток
         postfix_code.append(m2)  # Трансляцiя
-        postfix_code.append((':', 'colon'))#2
+        postfix_code.append((':', 'colon'))  # 2
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         while lex != '{':
             current_lex_id += 1
             current_line, lex, tok = get_current_lexeme(current_lex_id)
-    #else:
-    #    current_lex_id += 1
-    #
-        # Перевірка та трансляція булевого виразу
-    #        fail_parse('очікувався булевий вираз', current_line)
-    #    postfix_code.append(('JF', 'jf', m3))
+
+        # Добавлено: переход к метке m3 после успешного выполнения цикла
+        postfix_code.append(m3)  # Трансляцiя
+        postfix_code.append(('JMP', 'jump'))  # 3
 
         parse_token('{', 'brack_op', '')
         parse_statementlist()
         parse_token('}', 'brack_op', '')
         postfix_code.append(m1)  # Трансляцiя
-        postfix_code.append(('JMP', 'jump'))#1
+        postfix_code.append(('JMP', 'jump'))  # 1
         set_value_label(m3)  # в табл. мiток
         postfix_code.append(m3)  # Трансляцiя
-        postfix_code.append((':', 'colon'))#3
+        postfix_code.append((':', 'colon'))  # 3
 
 
 def get_current_lexeme(num_row):
@@ -1183,7 +1181,6 @@ def create_label():
     value = table_of_labels.get(lexeme)
     if not value:
         table_of_labels[lexeme] = 'val_undef'
-        print('<-----1')
         tok = 'label'  # # #
     else:
         tok = 'Конфлiкт мiток'
