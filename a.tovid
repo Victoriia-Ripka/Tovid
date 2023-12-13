@@ -19,9 +19,10 @@ func main() {
 	var complex c1 := 2i
 	var complex c2 := -1+3i
 	var complex c3
+	var string str := "yesyes"
 	const int five := 5
 	const done := "Done!"
-	// scanf(a, b)
+	scanf(str)
 	f := (a^2^3) + 3 / 2
 	b := (a+a) < five
 	print(a, f, b)

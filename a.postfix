@@ -9,6 +9,7 @@
 	c1     complex
 	c2     complex
 	c3     complex
+	str    string 
 	m      int    
 )
 
@@ -33,18 +34,18 @@
 )
 
 .labels(
-	m1    79    
-	m4    97    
-	m5    99    
-	m3    101   
-	m2    103   
-	m6    107   
-	m7    118   
-	m10   132   
-	m11   140   
-	m9    144   
-	m12   148   
-	m8    152   
+	m1    84    
+	m4    102   
+	m5    104   
+	m3    106   
+	m2    108   
+	m6    112   
+	m7    123   
+	m10   137   
+	m11   145   
+	m9    149   
+	m12   153   
+	m8    157   
 )
 
 .code(
@@ -79,12 +80,17 @@
 	1+3i      complex   
 	-         unary_op  
 	:=        assign_op 
+	str       l-val     
+	"yesyes"  string    
+	:=        assign_op 
 	five      l-val     
 	5         int       
 	:=        assign_op 
 	done      l-val     
 	"Done!"   string    
 	:=        assign_op 
+	str       r-val     
+	IN        in_op     
 	f         l-val     
 	a         r-val     
 	2         int       

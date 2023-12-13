@@ -163,7 +163,7 @@ class PSM:             # Postfix Stack Machine
                     self.do_jumps(lex, tok)
                 elif tok == 'out_op':
                         id, _ = self.stack.pop()
-                        print('завдання: вивести ', id)
+                        # print('завдання: вивести ', id)
                         self.numInstr += 1
                         if id in self.tableOfVar.keys():
                             print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
@@ -172,8 +172,9 @@ class PSM:             # Postfix Stack Machine
                         else:
                             print(f'-------------- OUT: {id}')
                 elif tok == 'in_op':
-                        user_input = input()
-                        print(f'-------------- IN: {user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
+                        id, _ = self.stack.get_top_element()
+                        user_input = '"' + input() + '"'
+                        print(f'-------------- IN: {id}={self.tableOfVar[id][2]} -> {id}={user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
                         self.stack.push((user_input, 'string'))
                         self.do_it(':=', 'assign_op')
                         self.numInstr += 1
@@ -222,6 +223,7 @@ class PSM:             # Postfix Stack Machine
                 tokL = self.tableOfVar[lexL][1]
             else:  # elif lexL in self.tableOfNamedConst.keys():
                 tokL = self.tableOfNamedConst[lexL][1]
+            # print('tokL =', tokL, 'tokR =', tokR)
             if tokL != tokR:
                 print(f'(lexR,tokR)={(lexR, tokR)}\n(lexL,tokL)={(lexL, tokL)}')
                 raise PSMExcept(7)  # типи змінної відрізняється від типу значення
