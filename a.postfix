@@ -6,9 +6,6 @@
 	b      boolean
 	f      float  
 	k      int    
-	c1     complex
-	c2     complex
-	c3     complex
 	str    string 
 	m      int    
 )
@@ -35,18 +32,16 @@
 )
 
 .labels(
-	m1    84    
-	m4    102   
-	m5    104   
-	m3    106   
-	m2    108   
-	m6    112   
-	m7    123   
-	m10   137   
-	m11   145   
-	m9    149   
-	m12   153   
-	m8    157   
+	m1    70    
+	m4    88    
+	m5    90    
+	m3    92    
+	m2    94    
+	m6    98    
+	m7    110   
+	m9    123   
+	m10   127   
+	m8    131   
 )
 
 .code(
@@ -73,13 +68,6 @@
 	:=        assign_op 
 	k         l-val     
 	10        int       
-	:=        assign_op 
-	c1        l-val     
-	2i        complex   
-	:=        assign_op 
-	c2        l-val     
-	1+3i      complex   
-	-         unary_op  
 	:=        assign_op 
 	str       l-val     
 	"yesyes"  string    
@@ -115,13 +103,6 @@
 	f         r-val     
 	OUT       out_op    
 	b         r-val     
-	OUT       out_op    
-	c3        l-val     
-	c1        r-val     
-	c2        r-val     
-	+         add_op    
-	:=        assign_op 
-	c3        r-val     
 	OUT       out_op    
 	"\n"      r-val     
 	OUT       out_op    
@@ -165,9 +146,10 @@
 	m6        label     
 	:         colon     
 	m         l-val     
-	five      r-val     
+	5         int       
 	:=        assign_op 
 	m         r-val     
+	0         int       
 	>=        rel_op    
 	m8        label     
 	JF        jf        
@@ -175,35 +157,22 @@
 	JMP       jump      
 	m7        label     
 	:         colon     
+	m8        label     
+	JMP       jump      
 	m         r-val     
-	!=        rel_op    
+	0         int       
+	>         rel_op    
 	m9        label     
 	JF        jf        
 	"Not yet!"r-val     
 	OUT       out_op    
-	m         r-val     
-	!=        rel_op    
 	m10       label     
-	JF        jf        
-	"Not yet!"r-val     
-	OUT       out_op    
-	m10       label     
-	:         colon     
-	m         r-val     
-	!=        rel_op    
-	m11       label     
-	JF        jf        
-	"Not yet!"r-val     
-	OUT       out_op    
-	m11       label     
-	:         colon     
-	m12       label     
 	JMP       jump      
 	m9        label     
 	:         colon     
 	done      r-val     
 	OUT       out_op    
-	m12       label     
+	m10       label     
 	:         colon     
 	m6        label     
 	JMP       jump      
