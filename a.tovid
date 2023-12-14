@@ -16,9 +16,9 @@ func main() {
 
     var float f
 	var k := 10
-	var complex c1 := 2i
-	var complex c2 := -1+3i
-	var complex c3
+	// var complex c1 := 2i
+	// var complex c2 := -1+3i
+	// var complex c3
 	var string str := "yesyes"
 	const int five := 5
 	const done := "Done!"
@@ -27,8 +27,8 @@ func main() {
 	b := (a+a) < five
 	print(a, f, b)
 
-    c3 := c1 + c2
-    print(c3)
+    // c3 := c1 + c2
+    // print(c3)
     print("\n" + done)
 }
 
