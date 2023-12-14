@@ -45,6 +45,7 @@ table_of_const = {}
 
 table_of_var = {}
 table_of_named_const = {}
+# united_table_var_named_const = {}
 table_of_labels = {}
 bool_expr_results = ('true', 'false')
 
@@ -374,7 +375,7 @@ def parse_statementlist():
         elif lex == 'return':
             parse_return()
         elif lex in table_of_id.keys():
-            if lex in table_of_var.keys() or lex in table_of_named_const.keys():
+            if lex in table_of_var.keys() or lex in table_of_named_const.keys():  # declared_var сама заборонить переприсвоєння константи
                 parse_declared_var(lex, tok)
             else:
                 fail_parse('оголошення змінної чи константи без var/const', (current_line, lex, tok))
@@ -397,6 +398,7 @@ def parse_declared_var(lexeme, token):
         index, old_type, _ = table_of_var[lexeme]
         if new_type == old_type:
             table_of_var[lexeme] = (index, old_type, 'assigned')
+            # united_table_var_named_const[lexeme] = (index, old_type, 'variable', 'assigned')
         else:
             fail_parse('значення змінної не відповідає оголошеному типу', (ident_line, lexeme, token))
     elif lexeme in table_of_named_const.keys():
@@ -496,8 +498,10 @@ def parse_declarlist():
                 if declared_datatype == value_datatype:
                     if keyword == 'var' or keyword == 'for':
                         table_of_var[current_id] = (index, declared_datatype, 'assigned')
+                        # united_table_var_named_const[current_id] = (index, declared_datatype, 'variable', 'assigned')
                     else:
                         table_of_named_const[current_id] = (index, declared_datatype)
+                        # united_table_var_named_const[current_id] = (index, declared_datatype, 'const', 'assigned')
                 else:
                     fail_parse('значення змінної не відповідає оголошеному типу', (num_line_s, current_id, 'ident'))
             else:
@@ -517,8 +521,10 @@ def parse_declarlist():
             else:
                 if keyword == 'var':
                     table_of_var[current_id] = (index, declared_datatype, 'undefined')
+                    # united_table_var_named_const[current_id] = (index, declared_datatype, 'variable', 'undefined')
                 else:
                     table_of_named_const[current_id] = (index, declared_datatype)
+                    # united_table_var_named_const[current_id] = (index, declared_datatype, 'const', 'assigned')
     else:
         fail_parse("очікувався ідентифікатор", (num_line_s, lex, tok))
 
@@ -1237,3 +1243,256 @@ def create_label():
 
 
 code_execution()  # compile_to_postfix() відбувається всередині
+
+
+code = ""
+
+
+def convert_to_CIL():
+    global code
+    label_name = ''
+    prev = ''
+    code_slice = ''
+    last_lval = ''
+    for instr in postfix_code:
+        val, tok = instr[0], instr[1]
+
+        if tok == 'l-val':
+            if val in table_of_var.keys():
+                prev = table_of_var[val][1]
+            elif val in table_of_named_const.keys():
+                prev = table_of_named_const[val][1]
+            code += f'\tldloca {val}\n'
+            last_lval = val
+
+        elif tok == 'r-val':
+            if val in table_of_var.keys():
+                var_named_const_type = table_of_var[val][1]
+            elif val in table_of_named_const.keys():
+                var_named_const_type = table_of_named_const[val][1]
+            if var_named_const_type in ('float', 'floatnum') and prev in ('int', 'intnum'):
+                code += '\tconv.r4\n'
+
+            code += f'\tldloc {val}\n'
+
+            if var_named_const_type in ('int', 'intnum') and prev in ('float', 'floatnum'):
+                code += '\tconv.r4\n'
+
+            prev = var_named_const_type
+
+        elif tok in ('int', 'intnum'):
+            code += f'\tldc.i4 {val}\n'
+            if prev in ('float', 'floatnum'):
+                code += '\tconv.r4\n'
+                prev = 'float'
+            else:
+                prev = 'int'
+
+        elif tok in ('float', 'floatnum'):
+            if prev in ('int', 'intnum'):
+                code += '\tconv.r4\n'
+
+            code += f'\tldc.r4 {val}\n'
+
+            prev = 'float'
+
+        elif tok in ('boolval', 'boolean') and val == 'true':
+            code += f'\tldc.i4 1\n'
+            prev = 'boolean'
+
+        elif tok in ('boolval', 'boolean') and val == 'false':
+            code += f'\tldc.i4 0\n'
+            prev = 'boolean'
+
+        elif tok == 'assign_op':
+            code_slice = code[-8:].strip()
+            if code_slice in ('brtrue', 'brfalse'):
+                last_index = code.rfind(code_slice)
+                code = code[:last_index]
+                code += f'stloc.s {last_lval}\n'
+            else:
+                if prev in ('float', 'floatnum'):
+                    code += f'\tstind.r4\n'
+                elif prev in ('int', 'intnum'):
+                    code += f'\tstind.i4\n'
+            prev = ''
+
+        elif tok == 'add_op' and val == '+':
+            code += f'\tadd\n'
+            # prev = ''
+
+        elif tok == 'add_op' and val == '-':
+            code += f'\tsub\n'
+            # prev = ''
+
+        elif tok == 'mult_op' and val == '*':
+            code += f'\tmul\n'
+            # prev = ''
+
+        elif tok == 'mult_op' and val == '/':
+            code += f'\tdiv\n'
+            # prev = ''
+
+        elif tok == 'power_op' and val == '^':
+            code += f'\tcall float64 [mscorlib]System.Math::Pow(float64, float64)\n'
+            prev = 'float'
+
+        elif tok == 'rel_op' and val == '==':
+            code += f'\tceq\n\tbrfalse '
+            prev = ''
+
+        elif tok == 'rel_op' and val == '!=':
+            code += f'\tceq\n\tldc.i4 0\n\tceq\n\tbrfalse '
+            prev = ''
+
+        elif tok == 'rel_op' and val == '>':
+            code += f'\tcgt\n\tbrfalse '
+            prev = ''
+
+        elif tok == 'rel_op' and val == '>=':
+            code += f'\tclt\n\tbrtrue '
+            prev = ''
+
+        elif tok == 'rel_op' and val == '<':
+            code += f'\tclt\n\tbrfalse '
+            prev = ''
+
+        elif tok == 'rel_op' and val == '<=':
+            code += f'\tcgt\n\tbrtrue '
+            prev = ''
+
+        elif tok == 'label':
+            label_name = val
+            # code += f'{label_name + ":"}\n'
+            prev = 'label'
+            continue
+
+        elif tok == 'jf':
+            code += f'{label_name}\n'
+            label_name = ''
+
+        elif tok == 'jump':
+            code += f'\tbr {label_name}\n'
+            label_name = ''
+
+        elif val == ':' and prev == 'label':
+            code += f'{label_name + ":"}\n'
+            label_name = ''
+            prev = ''
+
+        elif tok == 'out_op':
+            if prev in ('int', 'float', 'intnum', 'floatnum'):
+                var_named_const_type = prev + '32'
+            else:
+                var_named_const_type = prev
+            code += f'\tcall void [mscorlib]System.Console::WriteLine({var_named_const_type if var_named_const_type != "boolean" else "bool"})\n'
+            prev = ''
+
+        elif tok == 'in_op':
+            code += f'\tcall string [mscorlib]System.Console::ReadLine()\n'
+            if prev in ('int', 'float', 'boolean', 'intnum', 'floatnum', 'boolval'):
+                code += f'\tcall {prev}32 [mscorlib]System.{prev.capitalize() + "32" if prev not in ("boolean", "boolval") else "Boolean"}::Parse(string)\n'
+
+            if prev in ('float', 'floatnum'):
+                code += f'\tstind.r4\n'
+            else:
+                code += f'\tstind.i4\n'
+            prev = ''
+
+
+def save_CIL(file_name):
+    fname = file_name + ".il"
+    f = open(fname, 'w')
+    header = """// Referenced Assemblies.
+.assembly extern mscorlib
+{
+  .publickeytoken = (B7 7A 5C 56 19 34 E0 89 ) 
+  .ver 4:0:0:0
+}
+
+// Our assembly.
+.assembly """ + file_name + """
+{
+  .hash algorithm 0x00008004
+  .ver 0:0:0:0
+}
+
+.module """ + file_name + """.exe
+
+// Definition of Program class.
+.class private auto ansi beforefieldinit Program
+  extends [mscorlib]System.Object
+{
+
+    .method private hidebysig static void Main(string[] args) cil managed
+    {
+    .locals (
+"""
+    # f.write(header)
+
+    #   cntVars = len(table_of_var)
+    local_vars_named_consts = ""
+    comma = ","
+    i = 0
+    for table in (table_of_var, table_of_named_const):
+        for x in table:
+            try:
+                _, type, _ = table[x]
+            except ValueError:
+                _, type = table[x]
+            if type == 'int':
+                type_il = 'int32'
+            elif type == 'float':
+                type_il = 'float32'
+            elif type == 'string':
+                type_il = type
+            elif type == 'boolean':
+                type_il = 'bool'
+
+            if i == len(table) - 1:
+                comma = "\n     )"
+            local_vars_named_consts += "       [{0}]  {1} {2}".format(i, type_il, x) + comma + "\n"
+            i = i + 1
+
+
+    # print((x,a))
+    entrypoint = """
+   .entrypoint
+   //.maxstack  8\n"""
+    #   code = ""
+    #   # for instr in postfixCodeCLR:
+    #   for instr in postfix_code:
+    #     code += instr + "\n"
+
+    #   # виведення значень змінних
+    values_var_named_const = ""
+    for table in (table_of_var, table_of_named_const):
+        for x in table:
+            values_var_named_const += "\t" + 'ldstr "' + x + ' = "\n'
+            values_var_named_const += "\t" + "call void [mscorlib]System.Console::Write(string) \n"
+            try:
+                _, type, _ = table[x]
+            except ValueError:
+                _, type = table[x]
+            if type == 'boolean':
+                type = 'bool'
+            elif type == 'string':
+                pass
+            else:
+                type = type + '32'
+            values_var_named_const += "\t" + "ldloc  " + x + "\n"
+            values_var_named_const += "\t" + "call void [mscorlib]System.Console::WriteLine(" + type + ") \n"
+
+
+    f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + "\tret    \n}\n}")
+    f.close()
+    print(f"\nIL-програма для CLR збережена у файлі {fname}")
+
+try:
+    convert_to_CIL()
+    save_CIL(file_name)
+except SystemExit as error:
+    print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.
+          format(error))
+else:
+    print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[92mКонвертація postfix в il завершено успішно\033[0m')
