@@ -14,6 +14,8 @@ func main() {
 	var b := true
 	b := -b
 
+    var string s := "f"
+
     var float f
 	var k := 10
 	// var complex c1 := 2i

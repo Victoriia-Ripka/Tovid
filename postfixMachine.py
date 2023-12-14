@@ -189,7 +189,8 @@ class PSM:             # Postfix Stack Machine
             self.stack.print()
         except PSMExcept as e:
             # Повідомити про факт виявлення помилки
-            print('RunTime: Аварійне завершення програми з кодом {0}'.format(e))
+            # print('RunTime: Аварійне завершення програми з кодом {0}'.format(e))
+            exit(format(e))
 
     def do_jumps(self, lex, tok):
         ni = self.numInstr

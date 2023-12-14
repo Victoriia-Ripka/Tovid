@@ -24,17 +24,18 @@
     .locals (
        [0]  int32 a,
        [1]  bool b,
-       [2]  float32 f,
-       [3]  int32 k,
-       [4]  string str,
-       [5]  int32 m,
-       [6]  int32 i
+       [2]  string s,
+       [3]  float32 f,
+       [4]  int32 k,
+       [5]  string str,
+       [6]  int32 m,
+       [7]  int32 i
      )
-       [7]  float32 h
+       [8]  float32 h
      )
-       [8]  int32 five
+       [9]  int32 five
      )
-       [9]  string done
+       [10]  string done
      )
 
    .entrypoint
@@ -56,6 +57,7 @@
 	ldc.i4 1
 	ldloca b
 	ldloc b
+	ldloca s
 	ldloca k
 	ldc.i4 10
 	stind.i4
@@ -266,6 +268,10 @@ m13:
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  b
 	call void [mscorlib]System.Console::WriteLine(bool) 
+	ldstr "s = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  s
+	call void [mscorlib]System.Console::WriteLine(string) 
 	ldstr "f = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  f

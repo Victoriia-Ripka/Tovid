@@ -1515,13 +1515,17 @@ def save_CIL(file_name):
 
     f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + "\tret    \n}\n}")
     f.close()
-    print(f"\nIL-програма для CLR збережена у файлі {fname}")
+    print(f"\nIL-код успішно збережено у файлі {fname}")
 
-try:
-    convert_to_CIL()
-    save_CIL(file_name)
-except SystemExit as error:
-    print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.
-          format(error))
-else:
-    print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[92mКонвертація postfix в il завершено успішно\033[0m')
+
+if f_success == (True, 'Executor'):
+    try:
+        convert_to_CIL()
+        save_CIL(file_name)
+    except SystemExit as error:
+        print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[91mАварійне завершення програми з кодом {0}\033[0m'.
+              format(error))
+        f_success = (False, 'Converter')
+    else:
+        print('\033[0m\033[1m\033[4mCIL-converter\033[0m: \033[92mКонвертація postfix в il завершено успішно\033[0m')
+        f_success = (True, 'Converter')

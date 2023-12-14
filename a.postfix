@@ -4,6 +4,7 @@
 .vars(
 	a      int    
 	b      boolean
+	s      string 
 	f      float  
 	k      int    
 	str    string 
@@ -34,19 +35,19 @@
 )
 
 .labels(
-	m1    70    
-	m4    88    
-	m5    90    
-	m3    92    
-	m2    94    
-	m6    98    
-	m7    110   
-	m9    168   
-	m10   172   
-	m8    176   
-	m11   180   
-	m12   192   
-	m13   255   
+	m1    73    
+	m4    91    
+	m5    93    
+	m3    95    
+	m2    97    
+	m6    101   
+	m7    113   
+	m9    171   
+	m10   175   
+	m8    179   
+	m11   183   
+	m12   195   
+	m13   258   
 )
 
 .code(
@@ -70,6 +71,9 @@
 	b         l-val     
 	b         r-val     
 	-         unary_op  
+	:=        assign_op 
+	s         l-val     
+	"f"       string    
 	:=        assign_op 
 	k         l-val     
 	10        int       
