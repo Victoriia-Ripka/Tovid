@@ -58,11 +58,15 @@ func sum() {
     return a
 }
 
-for m := 10; m >= 4 ; m := m - 1 {
-    if m > 4 {
+for m := 10; m >= 1 ; m := m - 1 {
+    if m > 1 {
         print("Not yet!")
     }
     else {
-        print(done)
+        print("done")
     }
+}
+
+for i := 0; i < 11 ; i := i + 1 {
+    print(i)
 }

@@ -519,7 +519,7 @@ def parse_declarlist():
                 num_line_s, lex, tok = get_current_lexeme(current_lex_id)
                 fail_parse("неможливо визначити тип", (num_line_s, lex, tok))
             else:
-                if keyword == 'var':
+                if keyword == 'var' or keyword == 'for':
                     table_of_var[current_id] = (index, declared_datatype, 'undefined')
                     # united_table_var_named_const[current_id] = (index, declared_datatype, 'variable', 'undefined')
                 else:
@@ -904,9 +904,36 @@ def parse_for():
         postfix_code.append(m2)  # Трансляцiя
         postfix_code.append((':', 'colon'))  # 2
         current_line, lex, tok = get_current_lexeme(current_lex_id)
-        while lex != '{':
-            current_lex_id += 1
-            current_line, lex, tok = get_current_lexeme(current_lex_id)
+        if znak == '<' or znak == '<=':
+            k = 0
+            while lex != '{':
+                k += 1
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
+                current_lex_id += 1
+
+            for i in range(start_znach,last_znach):
+                if i == start_znach:
+                    current_lex_id -= k
+                else:
+                    current_lex_id -= k - 1
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
+                parse_declared_var(lex, tok)
+
+        else:
+            k = 0
+            while lex != '{':
+                k += 1
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
+                current_lex_id+=1
+
+            for i in range(last_znach, start_znach):
+                if i == last_znach:
+                    current_lex_id -= k
+                else:
+                    current_lex_id -= k-1
+                current_line, lex, tok = get_current_lexeme(current_lex_id)
+                parse_declared_var(lex, tok)
+
 
         # Добавлено: переход к метке m3 после успешного выполнения цикла
         postfix_code.append(m3)  # Трансляцiя
@@ -915,13 +942,15 @@ def parse_for():
         parse_token('{', 'brack_op', '')
 
 
-
         if znak == '<' or znak == '<=':
             for i in range(start_znach,last_znach):
                 parse_statementlist()
+
+
         else:
             for i in range(last_znach,start_znach):
                 parse_statementlist()
+
 
         parse_token('}', 'brack_op', '')
         postfix_code.append(m1)  # Трансляцiя

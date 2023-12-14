@@ -27,13 +27,14 @@
        [2]  float32 f,
        [3]  int32 k,
        [4]  string str,
-       [5]  int32 m
+       [5]  int32 m,
+       [6]  int32 i
      )
-       [6]  float32 h
+       [7]  float32 h
      )
-       [7]  int32 five
+       [8]  int32 five
      )
-       [8]  string done
+       [9]  string done
      )
 
    .entrypoint
@@ -119,28 +120,144 @@ m2:
 	br m6
 m6:
 	ldloca m
-	ldc.i4 5
+	ldc.i4 10
 	stind.i4
 	ldloc m
-	ldc.i4 0
+	ldc.i4 1
 	clt
 	brtrue m8
 	br m7
 m7:
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
 	br m8
 	ldloc m
-	ldc.i4 0
+	ldc.i4 1
 	cgt
 	brfalse m9
 	ldloc "Not yet!"
 	call void [mscorlib]System.Console::WriteLine(int32)
 	br m10
 m9:
-	ldloc done
-	call void [mscorlib]System.Console::WriteLine(string)
+	ldloc "done"
+	call void [mscorlib]System.Console::WriteLine(int32)
 m10:
 	br m6
 m8:
+	br m11
+m11:
+	ldloca i
+	ldc.i4 0
+	stind.i4
+	ldloc i
+	ldc.i4 11
+	clt
+	brfalse m13
+	br m12
+m12:
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	br m13
+	ldloc i
+	call void [mscorlib]System.Console::WriteLine(int32)
+	br m11
+m13:
 	ldstr "a = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  a
@@ -164,6 +281,10 @@ m8:
 	ldstr "m = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  m
+	call void [mscorlib]System.Console::WriteLine(int32) 
+	ldstr "i = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  i
 	call void [mscorlib]System.Console::WriteLine(int32) 
 	ldstr "h = "
 	call void [mscorlib]System.Console::Write(string) 
