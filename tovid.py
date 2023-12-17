@@ -66,7 +66,7 @@ current_line = 1
 char = ''
 lexeme = ''
 
-params_types = {'nil': 'keyword', 'iota': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
+params_types = {'nil': 'keyword', 'int': 'keyword', 'float': 'keyword', 'complex': 'keyword',
                 'string': 'keyword', 'boolean': 'keyword'}
 
 allowed_data_types = ['int', 'float', 'complex', 'string', 'boolean']
@@ -130,6 +130,8 @@ def processing():
         else:
             lexeme += char
             token = get_token(state, lexeme)
+            if token == 'string':
+                lexeme = lexeme.replace('"', '')
             print('{0:<3d} {1:<10s} {2:<10s} '.format(num_line, lexeme, token))
             table_of_symb[len(table_of_symb) + 1] = (num_line, lexeme, token, '')
             lexeme = ''
@@ -436,11 +438,14 @@ def parse_scanf_print(lexeme, token):
                 else:
                     fail_parse('очікувався параметр', (current_line, lex1, tok1))
         elif lexeme == 'print':  # else:
-            if lex in table_of_var.keys() or lex in table_of_named_const.keys() or tok in params_types.keys():
+            if lex in table_of_var.keys() or lex in table_of_named_const.keys() or tok in allowed_data_types:
                 if lex in table_of_var.keys():
                     if table_of_var[lex][2] == 'undefined':
                         fail_parse('використання undefined змінної', (current_line, lex, tok))
-                postfix_code_gen('rval', (lex, 'rval'))
+                if tok in allowed_data_types and lex not in table_of_var.keys() and lex not in table_of_named_const.keys():
+                    postfix_code_gen(tok, (lex, tok))
+                else:
+                    postfix_code_gen('rval', (lex, 'rval'))
                 postfix_code_gen('out_op', ('OUT', 'out_op'))
                 current_lex_id += 1
                 current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -448,13 +453,16 @@ def parse_scanf_print(lexeme, token):
                 fail_parse('очікувався параметр', (current_line, lex, tok))
             while lex in (',', '+'):
                 _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
-                if lex1 in table_of_var.keys() or lex1 in table_of_named_const.keys() or tok1 in params_types.keys():
-                    if lex in table_of_var.keys():
+                if lex1 in table_of_var.keys() or lex1 in table_of_named_const.keys() or tok1 in allowed_data_types:
+                    if lex1 in table_of_var.keys():
                         if table_of_var[lex1][2] == 'undefined':
                             fail_parse('використання undefined змінної', (current_line, lex1, tok1))
                 else:
                     fail_parse('очікувався параметр', (current_line, lex1, tok1))
-                postfix_code_gen('rval', (lex1, 'rval'))
+                if tok1 in allowed_data_types and lex1 not in table_of_var.keys() and lex1 not in table_of_named_const.keys():
+                    postfix_code_gen(tok1, (lex1, tok1))
+                else:
+                    postfix_code_gen('rval', (lex1, 'rval'))
                 postfix_code_gen('out_op', ('OUT', 'out_op'))
                 current_lex_id += 2
                 current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -844,7 +852,6 @@ def parse_for():
     to_do = 0
     step = 0
 
-    # Знаходження початку циклу
     while lex != '{':
         if i == 0 and lex == ':=':
             current_line, lex, tok = get_current_lexeme(current_lex_id-2)
@@ -865,7 +872,6 @@ def parse_for():
             current_line, lex, tok = get_current_lexeme(current_lex_id+2)
             step = int(lex)
 
-
         current_line, lex, tok = get_current_lexeme(current_lex_id)
         current_lex_id += 1
         back += 1
@@ -878,10 +884,7 @@ def parse_for():
     if znak_2 == '-':
         last_znach = start_znach - (start_znach - to_do) * step
 
-
-    # Перевірка умов циклу та трансляція
     if i == 2:
-        # Отримання міток для переходів
         m1 = create_label()
         m2 = create_label()
         m3 = create_label()
@@ -934,23 +937,18 @@ def parse_for():
                 current_line, lex, tok = get_current_lexeme(current_lex_id)
                 parse_declared_var(lex, tok)
 
-
-        # Добавлено: переход к метке m3 после успешного выполнения цикла
         postfix_code.append(m3)  # Трансляцiя
         postfix_code.append(('JMP', 'jump'))  # 3
 
         parse_token('{', 'brack_op', '')
 
-
         if znak == '<' or znak == '<=':
             for i in range(start_znach,last_znach):
                 parse_statementlist()
 
-
         else:
             for i in range(last_znach,start_znach):
                 parse_statementlist()
-
 
         parse_token('}', 'brack_op', '')
         postfix_code.append(m1)  # Трансляцiя
@@ -1299,12 +1297,29 @@ def convert_to_CIL():
                 var_named_const_type = table_of_var[val][1]
             elif val in table_of_named_const.keys():
                 var_named_const_type = table_of_named_const[val][1]
-            if var_named_const_type in ('float', 'floatnum') and prev in ('int', 'intnum'):
-                code += '\tconv.r4\n'
 
-            code += f'\tldloc {val}\n'
+            if var_named_const_type == 'float' and prev in ('int', 'intnum'):
+                code += '\tconv.r4\n'
+            elif var_named_const_type == 'int' and prev in ('float', 'floatnum'):
+                code += '\tconv.i4\n'
+            elif var_named_const_type == 'boolean' and prev not in ('bool', 'boolean'):
+                code += '\tldc.i4 1\n'
+                code += '\tceq\n'
+
+            if var_named_const_type == 'string':
+                if prev not in ('string', 'stringval'):
+                    code += '\tcall string [mscorlib]System.Object::ToString()\n'
+
+            if var_named_const_type == 'string':
+                code += f'\tldloc {val}\n'
+            elif var_named_const_type == 'bool':
+                code += f'\tldc.i4 {1 if val == "true" else 0}\n'
+            else:
+                code += f'\tldloc {val}\n'
 
             if var_named_const_type in ('int', 'intnum') and prev in ('float', 'floatnum'):
+                code += '\tconv.r4\n'
+            elif var_named_const_type in ('float', 'floatnum') and prev in ('int', 'intnum'):
                 code += '\tconv.r4\n'
 
             prev = var_named_const_type
@@ -1324,6 +1339,14 @@ def convert_to_CIL():
             code += f'\tldc.r4 {val}\n'
 
             prev = 'float'
+
+        elif tok in ('string', 'stringval'):
+            if prev in ('int', 'intnum', 'float', 'floatnum'):
+                code += '\tbox [mscorlib]System.Int32\n'
+
+            code += f'\tldstr "{val}"\n'
+
+            prev = 'string'
 
         elif tok in ('boolval', 'boolean') and val == 'true':
             code += f'\tldc.i4 1\n'
@@ -1412,9 +1435,11 @@ def convert_to_CIL():
         elif tok == 'out_op':
             if prev in ('int', 'float', 'intnum', 'floatnum'):
                 var_named_const_type = prev + '32'
-            else:
-                var_named_const_type = prev
-            code += f'\tcall void [mscorlib]System.Console::WriteLine({var_named_const_type if var_named_const_type != "boolean" else "bool"})\n'
+                code += f'\tcall void [mscorlib]System.Console::WriteLine({var_named_const_type})\n'
+            elif prev in ('string', 'stringval'):
+                code += f'\tcall void [mscorlib]System.Console::WriteLine(string)\n'
+            elif prev == 'boolean':
+                code += '\tcall void [mscorlib]System.Console::WriteLine(bool)\n'
             prev = ''
 
         elif tok == 'in_op':
@@ -1461,9 +1486,10 @@ def save_CIL(file_name):
 
     #   cntVars = len(table_of_var)
     local_vars_named_consts = ""
-    comma = ","
-    i = 0
+    j = 0
     for table in (table_of_var, table_of_named_const):
+        comma = ","
+        i = 0
         for x in table:
             try:
                 _, type, _ = table[x]
@@ -1478,10 +1504,12 @@ def save_CIL(file_name):
             elif type == 'boolean':
                 type_il = 'bool'
 
-            if i == len(table) - 1:
-                comma = "\n     )"
-            local_vars_named_consts += "       [{0}]  {1} {2}".format(i, type_il, x) + comma + "\n"
+            if i == len(table) - 1 and table == table_of_named_const:
+                comma = "\n    )"
+            local_vars_named_consts += "       [{0}]  {1} {2}".format(j, type_il, x) + comma + "\n"
             i = i + 1
+            j = j + 1
+
 
 
     # print((x,a))
@@ -1509,9 +1537,10 @@ def save_CIL(file_name):
                 pass
             else:
                 type = type + '32'
+            # ld_type = "ldstr  " if type == 'string' else "ldloc  "
+            # values_var_named_const += "\t" + ld_type + x + "\n"
             values_var_named_const += "\t" + "ldloc  " + x + "\n"
             values_var_named_const += "\t" + "call void [mscorlib]System.Console::WriteLine(" + type + ") \n"
-
 
     f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + "\tret    \n}\n}")
     f.close()

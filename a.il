@@ -29,14 +29,11 @@
        [4]  int32 k,
        [5]  string str,
        [6]  int32 m,
-       [7]  int32 i
-     )
-       [8]  float32 h
-     )
-       [9]  int32 five
-     )
+       [7]  int32 i,
+       [8]  float32 h,
+       [9]  int32 five,
        [10]  string done
-     )
+    )
 
    .entrypoint
    //.maxstack  8
@@ -58,18 +55,23 @@
 	ldloca b
 	ldloc b
 	ldloca s
+	ldstr "f"
 	ldloca k
 	ldc.i4 10
 	stind.i4
 	ldloca str
+	ldstr "yesyes"
 	ldloca five
 	ldc.i4 5
 	stind.i4
 	ldloca done
+	ldstr "Done!"
+	call string [mscorlib]System.Object::ToString()
 	ldloc str
 	call string [mscorlib]System.Console::ReadLine()
 	stind.i4
 	ldloca f
+	conv.i4
 	ldloc a
 	conv.r4
 	ldc.i4 2
@@ -90,10 +92,13 @@
 	call void [mscorlib]System.Console::WriteLine(int32)
 	ldloc f
 	call void [mscorlib]System.Console::WriteLine(float32)
+	ldc.i4 1
+	ceq
 	ldloc b
 	call void [mscorlib]System.Console::WriteLine(bool)
-	ldloc "\n"
-	call void [mscorlib]System.Console::WriteLine(bool)
+	ldstr "\n"
+	call void [mscorlib]System.Console::WriteLine(string)
+	call string [mscorlib]System.Object::ToString()
 	ldloc done
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc a
@@ -180,12 +185,13 @@ m7:
 	ldc.i4 1
 	cgt
 	brfalse m9
-	ldloc "Not yet!"
-	call void [mscorlib]System.Console::WriteLine(int32)
+	ldstr "Not yet!"
+	call void [mscorlib]System.Console::WriteLine(string)
 	br m10
 m9:
-	ldloc "done"
-	call void [mscorlib]System.Console::WriteLine(int32)
+	call string [mscorlib]System.Object::ToString()
+	ldloc done
+	call void [mscorlib]System.Console::WriteLine(string)
 m10:
 	br m6
 m8:

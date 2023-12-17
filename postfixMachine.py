@@ -163,7 +163,6 @@ class PSM:             # Postfix Stack Machine
                     self.do_jumps(lex, tok)
                 elif tok == 'out_op':
                         id, _ = self.stack.pop()
-                        # print('завдання: вивести ', id)
                         self.numInstr += 1
                         if id in self.tableOfVar.keys():
                             print(f'-------------- OUT: {id}={self.tableOfVar[id][2]}')
