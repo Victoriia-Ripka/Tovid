@@ -1,0 +1,72 @@
+.target: Postfix Machine
+.version: 0.0.1
+
+.vars(
+	a     int   
+	b     float 
+	new   float 
+	s     string
+)
+
+.constants(
+	2    int  
+	3.1  float
+	4    int  
+	0    int  
+	1    int  
+	3    int  
+)
+
+.named_constants(
+	c      int    
+	done   string 
+)
+
+.labels(
+)
+
+.code(
+	a        l-val    
+	2        int      
+	:=       assign_op
+	b        l-val    
+	3.1      float    
+	:=       assign_op
+	c        l-val    
+	4        int      
+	:=       assign_op
+	new      l-val    
+	0        int      
+	1        int      
+	4        int      
+	c        r-val    
+	^        pow_op   
+	^        pow_op   
+	-        add_op   
+	3        int      
+	2        int      
+	/        mult_op  
+	+        add_op   
+	:=       assign_op
+	s        l-val    
+	hello    string   
+	:=       assign_op
+	a        r-val    
+	OUT      out_op   
+	b        r-val    
+	OUT      out_op   
+	c        r-val    
+	OUT      out_op   
+	s        r-val    
+	OUT      out_op   
+	new      r-val    
+	OUT      out_op   
+	done     l-val    
+	Done!    string   
+	:=       assign_op
+	\n       string   
+	OUT      out_op   
+	done     r-val    
+	OUT      out_op   
+)
+
