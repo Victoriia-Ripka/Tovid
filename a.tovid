@@ -42,12 +42,14 @@ yefff
 // hellooo
 
 func sum() {
-    // var int a := 15
+    // a := 15
     if a == 15 {
-        // var int k := 10
-        return a
+        var int yes := 10
+        print(yes)
     }
     else {
+        var int no := 7
+        print(no)
         if a + a >= a * 3 {
             if a > 2 {
                 return 8

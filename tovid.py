@@ -1443,17 +1443,23 @@ def convert_to_CIL():
             prev = 'boolean'
 
         elif tok == 'label':
+            # if prev == 'boolean':
+            #
             label_name = val
             # code += f'{label_name + ":"}\n'
             prev = 'label'
             continue
 
-        elif tok == 'jf':
-            code += f'{label_name}\n'
+        elif tok == 'jf' and val == 'JF':
+            if prev == 'label':
+                code += f'\tbrfalse {label_name}\n'
+            # code += f'{label_name}\n'
             label_name = ''
 
-        elif tok == 'jump':
-            code += f'\tbr {label_name}\n'
+        elif tok == 'jump' and val == 'JMP':
+            if prev == 'label':
+                code += f'\tbr {label_name}\n'
+            # code += f'\tbr {label_name}\n'
             label_name = ''
 
         elif tok == 'colon' and val == ':' and prev == 'label':

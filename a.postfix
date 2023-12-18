@@ -8,6 +8,8 @@
 	f      float  
 	k      int    
 	str    string 
+	yes    int    
+	no     int    
 )
 
 .constants(
@@ -20,6 +22,7 @@
 	1+3i   complex
 	5      int    
 	15     int    
+	7      int    
 	8      int    
 	1      int    
 	0      int    
@@ -33,11 +36,11 @@
 )
 
 .labels(
-	m1   71   
-	m4   89   
-	m5   91   
-	m3   93   
-	m2   95   
+	m1    79    
+	m4    102   
+	m5    104   
+	m3    106   
+	m2    108   
 )
 
 .code(
@@ -105,15 +108,28 @@
 	OUT      out_op   
 	done     r-val    
 	OUT      out_op   
+	a        l-val    
+	15       int      
+	:=       assign_op
 	a        r-val    
 	15       int      
 	==       rel_op   
 	m1       label    
 	JF       jf       
+	yes      l-val    
+	10       int      
+	:=       assign_op
+	yes      r-val    
+	OUT      out_op   
 	m2       label    
 	JMP      jump     
 	m1       label    
 	:        colon    
+	no       l-val    
+	7        int      
+	:=       assign_op
+	no       r-val    
+	OUT      out_op   
 	a        r-val    
 	a        r-val    
 	+        add_op   
