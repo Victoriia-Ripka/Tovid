@@ -39,6 +39,8 @@
        [11]  int32 five,
        [12]  string done
     )
+	ldstr ""
+	call void [mscorlib]System.Console::WriteLine(string)
 	ldloca h
 	ldc.r4 10.1
 	ldc.r4 5.2
@@ -75,6 +77,9 @@
 	ldloca done
 	ldstr "Done!"
 	stind.ref
+	ldloca str
+	call string [mscorlib]System.Console::ReadLine()
+	stind.ref
 	ldloca f
 	conv.i4
 	ldloc a
@@ -103,6 +108,8 @@
 	call void [mscorlib]System.Console::WriteLine(bool)
 	ldloc f
 	call void [mscorlib]System.Console::WriteLine(float32)
+	ldloc str
+	call void [mscorlib]System.Console::WriteLine(string)
 	ldstr "\n"
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc done
@@ -287,7 +294,8 @@ m12:
 	call void [mscorlib]System.Console::WriteLine(int32)
 	br m11
 m13:
-	ldstr "a = "
+
+ldstr ""call void [mscorlib]System.Console::WriteLine(string)	ldstr "a = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  a
 	call void [mscorlib]System.Console::WriteLine(int32) 
@@ -339,8 +347,8 @@ m13:
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  done
 	call void [mscorlib]System.Console::WriteLine(string) 
-	ldstr "Press any key to continue..."
-	call void [mscorlib]System.Console::WriteLine(string)
-	ret    
+
+ldstr ""
+call void [mscorlib]System.Console::WriteLine(string)	ret    
 }
 }

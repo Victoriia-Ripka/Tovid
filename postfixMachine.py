@@ -225,7 +225,7 @@ class PSM:             # Postfix Stack Machine
                 tokL = self.tableOfNamedConst[lexL][1]
             # print('tokL =', tokL, 'tokR =', tokR)
             if tokL != tokR:
-                print(f'(lexR,tokR)={(lexR, tokR)}\n(lexL,tokL)={(lexL, tokL)}')
+                # print(f'(lexR,tokR)={(lexR, tokR)}\n(lexL,tokL)={(lexL, tokL)}')
                 raise PSMExcept(7)  # типи змінної відрізняється від типу значення
             else:
                 # виконати операцію:

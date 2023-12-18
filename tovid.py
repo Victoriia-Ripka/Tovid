@@ -420,7 +420,7 @@ def parse_scanf_print(lexeme, token):
         _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
         if lexeme == 'scanf':
             if lex in table_of_var.keys():  # зчитувати для переприсвоєння можна лише змінну
-                postfix_code_gen('rval', (lex, 'rval'))
+                postfix_code_gen('lval', (lex, 'lval'))
                 postfix_code_gen('in_op', ('IN', 'in_op'))
                 current_lex_id += 1
                 current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -431,7 +431,7 @@ def parse_scanf_print(lexeme, token):
             while lex == ',':
                 _, lex1, tok1 = get_current_lexeme(current_lex_id + 1)
                 if lex1 in table_of_var.keys():
-                    postfix_code_gen('rval', (lex1, 'rval'))
+                    postfix_code_gen('lval', (lex1, 'lval'))
                     postfix_code_gen('in_op', ('IN', 'in_op'))
                     current_lex_id += 2
                     current_line, lex, tok = get_current_lexeme(current_lex_id)
@@ -1289,13 +1289,14 @@ code_execution()  # compile_to_postfix() відбувається всереди
 
 
 code = ""
-
+code += '\tldstr ""\n'  # початковий вертикальний порожній рядок
+code += '\tcall void [mscorlib]System.Console::WriteLine(string)\n'
 
 def convert_to_CIL():
     global code
     label_name = ''
     prev = ''
-    code_slice = ''
+    last_string = ''
     last_lval = ''
     for instr in postfix_code:
         val, tok = instr[0], instr[1]
@@ -1313,6 +1314,9 @@ def convert_to_CIL():
                 var_named_const_type = table_of_var[val][1]
             elif val in table_of_named_const.keys():
                 var_named_const_type = table_of_named_const[val][1]
+
+            if var_named_const_type == 'string':
+                last_string = val
 
             if var_named_const_type == 'float' and prev in ('int', 'intnum'):
                 code += '\tconv.r4\n'
@@ -1479,19 +1483,20 @@ def convert_to_CIL():
 
         elif tok == 'in_op':
             code += f'\tcall string [mscorlib]System.Console::ReadLine()\n'
-            if prev in ('int', 'float', 'boolean', 'intnum', 'floatnum', 'boolval'):
-                code += f'\tcall {prev}32 [mscorlib]System.{prev.capitalize() + "32" if prev not in ("boolean", "boolval") else "Boolean"}::Parse(string)\n'
-
-            if prev in ('float', 'floatnum'):
-                code += f'\tstind.r4\n'
-            elif prev in ('string', 'stringval'):
-                code += f'\tstind.ref\n'
-            elif prev in ('boolean', 'boolval'):
-                code += f'\tstind.i1\n'
-            else:
-                code += f'\tstind.i4\n'
+            code += f'\tstind.ref\n'
+            # if prev in ('int', 'float', 'intnum', 'floatnum'):
+            #     code += f'\tcall {prev}32 [mscorlib]System.{prev.capitalize() + "32" if prev not in ("boolean", "boolval") else "Boolean"}::Parse(string)\n'
+            # if prev in ('float', 'floatnum'):
+            #     code += f'\tstind.r4\n'
+            # elif prev in ('string', 'stringval'):
+            #     code += f'\tstind.ref\n'
+            # elif prev in ('boolean', 'boolval'):
+            #     code += f'\tstind.i4\n'
+            # else:
+            #     code += f'\tstind.i4\n'
             prev = ''
-
+    code += '\nldstr ""'
+    code += 'call void [mscorlib]System.Console::WriteLine(string)'
 
 def save_CIL(file_name):
     fname = file_name + ".il"
@@ -1581,9 +1586,8 @@ def save_CIL(file_name):
             # values_var_named_const += "\t" + ld_type + x + "\n"
             values_var_named_const += "\t" + "ldloc  " + x + "\n"
             values_var_named_const += "\t" + "call void [mscorlib]System.Console::WriteLine(" + type + ") \n"
-    finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
-    # finishing_text += '\tcall valuetype [mscorlib]System.ConsoleKeyInfo [mscorlib]System.Console::ReadKey()\n'
-    # finishing_text += '\tpop\n'
+    # finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
+    finishing_text = '\nldstr ""\ncall void [mscorlib]System.Console::WriteLine(string)'
 
     f.write(header + entrypoint + local_vars_named_consts + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
     f.close()
