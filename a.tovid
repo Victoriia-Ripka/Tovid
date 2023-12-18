@@ -24,10 +24,11 @@ func main() {
 	var string str := "yesyes"
 	const int five := 5
 	const done := "Done!"
-	scanf(str)
+	// scanf(str)
 	f := (a^2^3) + 3 / 2
 	b := (a+a) < five
-	print(a, f, b)
+	// b := 5 == 5
+	print(a, b, f)
 
     // c3 := c1 + c2
     // print(c3)
@@ -69,6 +70,6 @@ func sum() {
     }
 } */
 
-for i := 0; i < 11 ; i := i + 1 {
+/* for i := 0; i < 11 ; i := i + 1 {
     print(i)
-}
+} */

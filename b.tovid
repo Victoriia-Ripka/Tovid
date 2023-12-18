@@ -1,0 +1,16 @@
+package main
+import "math/rand"
+
+func main() {
+	var int a := 2
+	var float b := 3.1
+	var float new
+	const int c := 4
+	new := 0 - (1^4^c) + 3 / 2
+
+	var string s := "hello"
+
+	print (a, b, c, s, new)
+	const done := "Done!"
+	print("\n" + done)
+}

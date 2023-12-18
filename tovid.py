@@ -1112,7 +1112,10 @@ def save_postfix_code():
             for i in range(len(identifiers)):
                 vars_for_postfix.append((identifiers[i], datatypes[i]))
             # print('\n', vars_for_postfix, '\n')
-            column_width = max(len(word) for row in vars_for_postfix for word in row)  # padding
+            try:
+                column_width = max(len(word) for row in vars_for_postfix for word in row)  # padding
+            except ValueError:
+                column_width = 5
             for row in vars_for_postfix:
                 section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
             section += ')\n\n'
@@ -1125,7 +1128,10 @@ def save_postfix_code():
             for i in range(len(identifiers)):
                 consts_for_postfix.append((identifiers[i], datatypes[i]))
             # print('\n', consts_for_postfix, '\n')
-            column_width = max(len(word) for row in consts_for_postfix for word in row)  # padding
+            try:
+                column_width = max(len(word) for row in consts_for_postfix for word in row)  # padding
+            except ValueError:
+                column_width = 5
             for row in consts_for_postfix:
                 section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
             section += ')\n\n'
@@ -1138,7 +1144,10 @@ def save_postfix_code():
             for i in range(len(identifiers)):
                 named_consts_for_postfix.append((identifiers[i], datatypes[i]))
             # print('\n', named_consts_for_postfix, '\n')
-            column_width = max(len(word) for row in named_consts_for_postfix for word in row) + 1  # padding
+            try:
+                column_width = max(len(word) for row in named_consts_for_postfix for word in row) + 1  # padding
+            except ValueError:
+                column_width = 5
             for row in named_consts_for_postfix:
                 section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
             section += ')\n\n'
@@ -1160,7 +1169,10 @@ def save_postfix_code():
             # for i in range(len(identifiers)):
             #     consts_for_postfix.append((identifiers[i], datatypes[i]))
             # print('\n', labels, '\n')
-            column_width = max(len(str(word)) for row in labels for word in row) + 3  # padding
+            try:
+                column_width = max(len(str(word)) for row in labels for word in row) + 3  # padding
+            except ValueError:
+                column_width = 5
             for row in labels:
                 section += '\t' + ''.join(str(word).ljust(column_width) for word in row) + '\n'
             section += ')\n\n'
@@ -1182,7 +1194,11 @@ def save_postfix_code():
             # for i in range(len(identifiers)):
             #     consts_for_postfix.append((identifiers[i], datatypes[i]))
             # print('\n', postfix_code, '\n')
-            column_width = max(len(word) for row in postfix_code for word in row)  # padding
+
+            try:
+                column_width = max(len(word) for row in postfix_code for word in row)  # padding
+            except ValueError:
+                column_width = 5
             for row in postfix_code:
                 section += '\t' + ''.join(word.ljust(column_width) for word in row) + '\n'
             section += ')\n\n'
@@ -1302,20 +1318,22 @@ def convert_to_CIL():
                 code += '\tconv.r4\n'
             elif var_named_const_type == 'int' and prev in ('float', 'floatnum'):
                 code += '\tconv.i4\n'
-            elif var_named_const_type == 'boolean' and prev not in ('bool', 'boolean'):
-                code += '\tldc.i4 1\n'
-                code += '\tceq\n'
+            # elif var_named_const_type == 'boolean' and prev not in ('bool', 'boolean'):
+            #     code += '\tldc.i4 1\n'
+                # code += '\tceq\n'
 
-            if var_named_const_type == 'string':
-                if prev not in ('string', 'stringval'):
-                    code += '\tcall instance string [mscorlib]System.Object::ToString()\n'
+            # if var_named_const_type == 'string':
+            #     if prev not in ('string', 'stringval'):
+            #         code += '\tcall instance string [mscorlib]System.Object::ToString()\n'
 
-            if var_named_const_type == 'string':
-                code += f'\tldloc {val}\n'
-            elif var_named_const_type == 'bool':
-                code += f'\tldc.i4 {1 if val == "true" else 0}\n'
-            else:
-                code += f'\tldloc {val}\n'
+            # if var_named_const_type == 'string':
+            #     code += f'\tldloc {val}\n'
+            # elif var_named_const_type == 'boolean':
+            #     print(val)
+            #     code += f'\tldc.i4 {1 if val == "true" else 0}\n'
+            # else:
+            #     code += f'\tldloc {val}\n'
+            code += f'\tldloc {val}\n'
 
             if var_named_const_type in ('int', 'intnum') and prev in ('float', 'floatnum'):
                 code += '\tconv.r4\n'
@@ -1357,16 +1375,14 @@ def convert_to_CIL():
             prev = 'boolean'
 
         elif tok == 'assign_op':
-            code_slice = code[-8:].strip()
-            if code_slice in ('brtrue', 'brfalse'):
-                last_index = code.rfind(code_slice)
-                code = code[:last_index]
-                code += f'stloc.s {last_lval}\n'
-            else:
-                if prev in ('float', 'floatnum'):
-                    code += f'\tstind.r4\n'
-                elif prev in ('int', 'intnum'):
-                    code += f'\tstind.i4\n'
+            if prev in ('float', 'floatnum'):
+                code += f'\tstind.r4\n'
+            elif prev in ('int', 'intnum'):
+                code += f'\tstind.i4\n'
+            elif prev in ('boolean', 'boolval'):
+                code += f'\tstind.i4\n'
+            elif prev in ('string', 'stringval'):
+                code += f'\tstind.ref\n'
             prev = ''
 
         elif tok == 'add_op' and val == '+':
@@ -1385,33 +1401,46 @@ def convert_to_CIL():
             code += f'\tdiv\n'
             # prev = ''
 
-        elif tok == 'power_op' and val == '^':
+        elif tok == 'pow_op' and val == '^':
             code += f'\tcall float64 [mscorlib]System.Math::Pow(float64, float64)\n'
+            # code += f'\tcall float64 [mscorlib]System.Math::Pow(float64, float64)\n'
             prev = 'float'
 
+        elif tok == 'unary_op' and val == '-':
+            code += f'\tneg\n'
+
+        elif tok == 'unary_op' and val == '+':
+            pass
+
         elif tok == 'rel_op' and val == '==':
-            code += f'\tceq\n\tbrfalse '
-            prev = ''
+            code += f'\tceq\n'
+            prev = 'boolean'
 
         elif tok == 'rel_op' and val == '!=':
-            code += f'\tceq\n\tldc.i4 0\n\tceq\n\tbrfalse '
-            prev = ''
+            code += f'\tceq\n'
+            code += f'\tldc.i4 0\n'
+            code += f'\tceq\n'
+            prev = 'boolean'
 
         elif tok == 'rel_op' and val == '>':
-            code += f'\tcgt\n\tbrfalse '
-            prev = ''
+            code += f'\tcgt\n'  # \tbrfalse '
+            prev = 'boolean'
 
         elif tok == 'rel_op' and val == '>=':
-            code += f'\tclt\n\tbrtrue '
-            prev = ''
+            code += f'\tclt\n'
+            code += f'\tldc.i4 0\n'
+            code += f'\tceq\n'
+            prev = 'boolean'
 
         elif tok == 'rel_op' and val == '<':
-            code += f'\tclt\n\tbrfalse '
-            prev = ''
+            code += f'\tclt\n'  # \tbrfalse '
+            prev = 'boolean'
 
         elif tok == 'rel_op' and val == '<=':
-            code += f'\tcgt\n\tbrtrue '
-            prev = ''
+            code += f'\tcgt\n'
+            code += f'\tldc.i4 0\n'
+            code += f'\tceq\n'
+            prev = 'boolean'
 
         elif tok == 'label':
             label_name = val
@@ -1427,7 +1456,7 @@ def convert_to_CIL():
             code += f'\tbr {label_name}\n'
             label_name = ''
 
-        elif val == ':' and prev == 'label':
+        elif tok == 'colon' and val == ':' and prev == 'label':
             code += f'{label_name + ":"}\n'
             label_name = ''
             prev = ''
@@ -1438,7 +1467,7 @@ def convert_to_CIL():
                 code += f'\tcall void [mscorlib]System.Console::WriteLine({var_named_const_type})\n'
             elif prev in ('string', 'stringval'):
                 code += f'\tcall void [mscorlib]System.Console::WriteLine(string)\n'
-            elif prev == 'boolean':
+            elif prev in ('boolean', 'boolval'):
                 code += '\tcall void [mscorlib]System.Console::WriteLine(bool)\n'
             prev = ''
 
@@ -1449,6 +1478,10 @@ def convert_to_CIL():
 
             if prev in ('float', 'floatnum'):
                 code += f'\tstind.r4\n'
+            elif prev in ('string', 'stringval'):
+                code += f'\tstind.ref\n'
+            elif prev in ('boolean', 'boolval'):
+                code += f'\tstind.i1\n'
             else:
                 code += f'\tstind.i4\n'
             prev = ''
@@ -1480,13 +1513,14 @@ def save_CIL(file_name):
 
     .method private hidebysig static void Main(string[] args) cil managed
     {
-    .locals (
 """
     # f.write(header)
 
     #   cntVars = len(table_of_var)
-    local_vars_named_consts = ""
+    local_vars_named_consts = "\t.locals (\n"
     j = 0
+
+    # only_one_table = True if not table_of_named_const else False
     for table in (table_of_var, table_of_named_const):
         comma = ","
         i = 0
@@ -1504,7 +1538,7 @@ def save_CIL(file_name):
             elif type == 'boolean':
                 type_il = 'bool'
 
-            if i == len(table) - 1 and table == table_of_named_const:
+            if i == len(table) - 1 and table == table_of_named_const:  # or only_one_table:
                 comma = "\n    )"
             local_vars_named_consts += "       [{0}]  {1} {2}".format(j, type_il, x) + comma + "\n"
             i = i + 1
@@ -1514,8 +1548,8 @@ def save_CIL(file_name):
 
     # print((x,a))
     entrypoint = """
-   .entrypoint
-   .maxstack  8\n"""
+    .entrypoint
+    .maxstack  8\n"""
     #   code = ""
     #   # for instr in postfixCodeCLR:
     #   for instr in postfix_code:
@@ -1542,10 +1576,10 @@ def save_CIL(file_name):
             values_var_named_const += "\t" + "ldloc  " + x + "\n"
             values_var_named_const += "\t" + "call void [mscorlib]System.Console::WriteLine(" + type + ") \n"
     finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
-    finishing_text += '\tcall valuetype [mscorlib]System.ConsoleKeyInfo [mscorlib]System.Console::ReadKey()\n'
+    # finishing_text += '\tcall valuetype [mscorlib]System.ConsoleKeyInfo [mscorlib]System.Console::ReadKey()\n'
     # finishing_text += '\tpop\n'
 
-    f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
+    f.write(header + entrypoint + local_vars_named_consts + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
     f.close()
     print(f"\nIL-код успішно збережено у файлі {fname}")
 
