@@ -33,9 +33,11 @@
        [5]  string str,
        [6]  int32 yes,
        [7]  int32 no,
-       [8]  float32 h,
-       [9]  int32 five,
-       [10]  string done
+       [8]  int32 m,
+       [9]  int32 i,
+       [10]  float32 h,
+       [11]  int32 five,
+       [12]  string done
     )
 	ldloca h
 	ldc.r4 10.1
@@ -105,9 +107,6 @@
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc done
 	call void [mscorlib]System.Console::WriteLine(string)
-	ldloca a
-	ldc.i4 15
-	stind.i4
 	ldloc a
 	ldc.i4 15
 	ceq
@@ -143,6 +142,151 @@ m4:
 m5:
 m3:
 m2:
+	br m6
+m6:
+	ldloca m
+	ldc.i4 10
+	stind.i4
+	ldloc m
+	ldc.i4 1
+	clt
+	ldc.i4 0
+	ceq
+	brfalse m8
+	br m7
+m7:
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	ldloca m
+	ldloc m
+	ldc.i4 1
+	sub
+	stind.i4
+	br m8
+	ldloc m
+	ldc.i4 1
+	cgt
+	brfalse m9
+	ldstr "Not yet!"
+	call void [mscorlib]System.Console::WriteLine(string)
+	br m10
+m9:
+	ldloc done
+	call void [mscorlib]System.Console::WriteLine(string)
+m10:
+	ldloc m
+	call void [mscorlib]System.Console::WriteLine(int32)
+	br m6
+m8:
+	br m11
+m11:
+	ldloca i
+	ldc.i4 0
+	stind.i4
+	ldloc i
+	ldc.i4 11
+	clt
+	brfalse m13
+	br m12
+m12:
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	ldloca i
+	ldloc i
+	ldc.i4 1
+	add
+	stind.i4
+	br m13
+	ldloc i
+	call void [mscorlib]System.Console::WriteLine(int32)
+	br m11
+m13:
 	ldstr "a = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  a
@@ -174,6 +318,14 @@ m2:
 	ldstr "no = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  no
+	call void [mscorlib]System.Console::WriteLine(int32) 
+	ldstr "m = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  m
+	call void [mscorlib]System.Console::WriteLine(int32) 
+	ldstr "i = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  i
 	call void [mscorlib]System.Console::WriteLine(int32) 
 	ldstr "h = "
 	call void [mscorlib]System.Console::Write(string) 
