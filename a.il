@@ -28,15 +28,14 @@
        [3]  float32 f,
        [4]  int32 k,
        [5]  string str,
-       [6]  int32 m,
-       [7]  int32 i,
-       [8]  float32 h,
-       [9]  int32 five,
-       [10]  string done
+       [6]  int32 i,
+       [7]  float32 h,
+       [8]  int32 five,
+       [9]  string done
     )
 
    .entrypoint
-   //.maxstack  8
+   .maxstack  300
 	ldloca h
 	ldc.r4 10.1
 	ldc.r4 5.2
@@ -66,7 +65,7 @@
 	stind.i4
 	ldloca done
 	ldstr "Done!"
-	call string [mscorlib]System.Object::ToString()
+	call instance string [mscorlib]System.Object::ToString()
 	ldloc str
 	call string [mscorlib]System.Console::ReadLine()
 	stind.i4
@@ -98,7 +97,7 @@
 	call void [mscorlib]System.Console::WriteLine(bool)
 	ldstr "\n"
 	call void [mscorlib]System.Console::WriteLine(string)
-	call string [mscorlib]System.Object::ToString()
+	call instance string [mscorlib]System.Object::ToString()
 	ldloc done
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc a
@@ -126,86 +125,15 @@ m3:
 m2:
 	br m6
 m6:
-	ldloca m
-	ldc.i4 10
-	stind.i4
-	ldloc m
-	ldc.i4 1
-	clt
-	brtrue m8
-	br m7
-m7:
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	ldloca m
-	ldloc m
-	ldc.i4 1
-	sub
-	stind.i4
-	br m8
-	ldloc m
-	ldc.i4 1
-	cgt
-	brfalse m9
-	ldstr "Not yet!"
-	call void [mscorlib]System.Console::WriteLine(string)
-	br m10
-m9:
-	call string [mscorlib]System.Object::ToString()
-	ldloc done
-	call void [mscorlib]System.Console::WriteLine(string)
-m10:
-	br m6
-m8:
-	br m11
-m11:
 	ldloca i
 	ldc.i4 0
 	stind.i4
 	ldloc i
 	ldc.i4 11
 	clt
-	brfalse m13
-	br m12
-m12:
+	brfalse m8
+	br m7
+m7:
 	ldloca i
 	ldloc i
 	ldc.i4 1
@@ -261,11 +189,11 @@ m12:
 	ldc.i4 1
 	add
 	stind.i4
-	br m13
+	br m8
 	ldloc i
 	call void [mscorlib]System.Console::WriteLine(int32)
-	br m11
-m13:
+	br m6
+m8:
 	ldstr "a = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  a
@@ -290,10 +218,6 @@ m13:
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  str
 	call void [mscorlib]System.Console::WriteLine(string) 
-	ldstr "m = "
-	call void [mscorlib]System.Console::Write(string) 
-	ldloc  m
-	call void [mscorlib]System.Console::WriteLine(int32) 
 	ldstr "i = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  i
@@ -310,6 +234,9 @@ m13:
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  done
 	call void [mscorlib]System.Console::WriteLine(string) 
+	// ldstr "Press any key to continue..."
+	// call void [mscorlib]System.Console::WriteLine(string)
+	call valuetype [mscorlib]System.ConsoleKeyInfo [mscorlib]System.Console::ReadKey()
 	ret    
 }
 }

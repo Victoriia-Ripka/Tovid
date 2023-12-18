@@ -8,7 +8,6 @@
 	f      float  
 	k      int    
 	str    string 
-	m      int    
 	i      int    
 )
 
@@ -42,12 +41,7 @@
 	m2    97    
 	m6    101   
 	m7    113   
-	m9    171   
-	m10   175   
-	m8    179   
-	m11   183   
-	m12   195   
-	m13   258   
+	m8    176   
 )
 
 .code(
@@ -154,99 +148,17 @@
 	JMP      jump     
 	m6       label    
 	:        colon    
-	m        l-val    
-	10       int      
-	:=       assign_op
-	m        r-val    
-	1        int      
-	>=       rel_op   
-	m8       label    
-	JF       jf       
-	m7       label    
-	JMP      jump     
-	m7       label    
-	:        colon    
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m        l-val    
-	m        r-val    
-	1        int      
-	-        add_op   
-	:=       assign_op
-	m8       label    
-	JMP      jump     
-	m        r-val    
-	1        int      
-	>        rel_op   
-	m9       label    
-	JF       jf       
-	Not yet! string   
-	OUT      out_op   
-	m10      label    
-	JMP      jump     
-	m9       label    
-	:        colon    
-	done     r-val    
-	OUT      out_op   
-	m10      label    
-	:        colon    
-	m6       label    
-	JMP      jump     
-	m8       label    
-	:        colon    
-	m11      label    
-	JMP      jump     
-	m11      label    
-	:        colon    
 	i        l-val    
 	0        int      
 	:=       assign_op
 	i        r-val    
 	11       int      
 	<        rel_op   
-	m13      label    
+	m8       label    
 	JF       jf       
-	m12      label    
+	m7       label    
 	JMP      jump     
-	m12      label    
+	m7       label    
 	:        colon    
 	i        l-val    
 	i        r-val    
@@ -303,13 +215,13 @@
 	1        int      
 	+        add_op   
 	:=       assign_op
-	m13      label    
+	m8       label    
 	JMP      jump     
 	i        r-val    
 	OUT      out_op   
-	m11      label    
+	m6       label    
 	JMP      jump     
-	m13      label    
+	m8       label    
 	:        colon    
 )
 

@@ -1308,7 +1308,7 @@ def convert_to_CIL():
 
             if var_named_const_type == 'string':
                 if prev not in ('string', 'stringval'):
-                    code += '\tcall string [mscorlib]System.Object::ToString()\n'
+                    code += '\tcall instance string [mscorlib]System.Object::ToString()\n'
 
             if var_named_const_type == 'string':
                 code += f'\tldloc {val}\n'
@@ -1515,7 +1515,7 @@ def save_CIL(file_name):
     # print((x,a))
     entrypoint = """
    .entrypoint
-   //.maxstack  8\n"""
+   .maxstack  8\n"""
     #   code = ""
     #   # for instr in postfixCodeCLR:
     #   for instr in postfix_code:
@@ -1541,8 +1541,11 @@ def save_CIL(file_name):
             # values_var_named_const += "\t" + ld_type + x + "\n"
             values_var_named_const += "\t" + "ldloc  " + x + "\n"
             values_var_named_const += "\t" + "call void [mscorlib]System.Console::WriteLine(" + type + ") \n"
+    finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
+    finishing_text += '\tcall valuetype [mscorlib]System.ConsoleKeyInfo [mscorlib]System.Console::ReadKey()\n'
+    # finishing_text += '\tpop\n'
 
-    f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + "\tret    \n}\n}")
+    f.write(header + local_vars_named_consts + entrypoint + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
     f.close()
     print(f"\nIL-код успішно збережено у файлі {fname}")
 
