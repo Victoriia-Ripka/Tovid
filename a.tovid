@@ -36,13 +36,15 @@ yefff
 // hellooo
 
 func sum() {
+    var int yes := 0
+    var int no := 0
     // a := 15
     if a == 15 {
-        var int yes := 10
+        yes := 10
         print(yes)
     }
     else {
-        var int no := 7
+        no := 7
         print(no)
         if a + a >= a * 3 {
             if a > 2 {

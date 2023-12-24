@@ -21,11 +21,11 @@
 	3    int  
 	10   int  
 	5    int  
+	0    int  
 	15   int  
 	7    int  
 	8    int  
 	1    int  
-	0    int  
 	11   int  
 )
 
@@ -36,19 +36,19 @@
 )
 
 .labels(
-	m1    80    
-	m4    103   
-	m5    105   
-	m3    107   
-	m2    109   
-	m6    113   
-	m7    125   
-	m9    183   
-	m10   187   
-	m8    193   
-	m11   197   
-	m12   209   
-	m13   272   
+	m1    86    
+	m4    109   
+	m5    111   
+	m3    113   
+	m2    115   
+	m6    119   
+	m7    131   
+	m9    189   
+	m10   193   
+	m8    199   
+	m11   203   
+	m12   215   
+	m13   278   
 )
 
 .code(
@@ -88,7 +88,7 @@
 	done     l-val    
 	Done!    string   
 	:=       assign_op
-	k        l-val    
+	str      l-val    
 	IN       in_op    
 	f        l-val    
 	a        r-val    
@@ -120,6 +120,12 @@
 	OUT      out_op   
 	done     r-val    
 	OUT      out_op   
+	yes      l-val    
+	0        int      
+	:=       assign_op
+	no       l-val    
+	0        int      
+	:=       assign_op
 	a        r-val    
 	15       int      
 	==       rel_op   

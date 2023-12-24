@@ -114,6 +114,12 @@
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc done
 	call void [mscorlib]System.Console::WriteLine(string)
+	ldloca yes
+	ldc.i4 0
+	stind.i4
+	ldloca no
+	ldc.i4 0
+	stind.i4
 	ldloc a
 	ldc.i4 15
 	ceq
