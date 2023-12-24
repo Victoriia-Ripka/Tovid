@@ -1296,8 +1296,6 @@ def convert_to_CIL():
     global code
     label_name = ''
     prev = ''
-    last_string = ''
-    last_lval = ''
     for instr in postfix_code:
         val, tok = instr[0], instr[1]
 
@@ -1307,16 +1305,12 @@ def convert_to_CIL():
             elif val in table_of_named_const.keys():
                 prev = table_of_named_const[val][1]
             code += f'\tldloca {val}\n'
-            last_lval = val
 
         elif tok == 'r-val':
             if val in table_of_var.keys():
                 var_named_const_type = table_of_var[val][1]
             elif val in table_of_named_const.keys():
                 var_named_const_type = table_of_named_const[val][1]
-
-            if var_named_const_type == 'string':
-                last_string = val
 
             if var_named_const_type == 'float' and prev in ('int', 'intnum'):
                 code += '\tconv.r4\n'
