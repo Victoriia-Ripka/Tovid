@@ -9,7 +9,7 @@ func sum() {
 func main() {
 
 	var int a := -2
-	a := a + 3
+	a := a + 4
 
 	var b := true
 	b := -b
@@ -22,7 +22,7 @@ func main() {
 	const int five := 5
 	const done := "Done!"
 	scanf(str)
-	f := (a^2^3) + 3 / 2
+	f := (a^(-2)^3) + 3 / 2
 	b := (a+a) < five
 	print(a, b, f, str)
 
@@ -71,4 +71,7 @@ for m := 10; m >= 1 ; m := m - 1 {
 
 for i := 0; i < 11 ; i := i + 1 {
     print(i)
+    for l := 10; l < 12 ; l := l + 1 {
+        print(l)
+    }
 }

@@ -1583,7 +1583,7 @@ def save_CIL(file_name):
     # finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
     finishing_text = '\nldstr ""\ncall void [mscorlib]System.Console::WriteLine(string)'
 
-    f.write(header + entrypoint + local_vars_named_consts + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
+    f.write(header + entrypoint + local_vars_named_consts + code + finishing_text + "\tret    \n}\n}")
     f.close()
     print(f"\nIL-код успішно збережено у файлі {fname}")
 

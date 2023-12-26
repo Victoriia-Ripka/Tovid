@@ -12,21 +12,24 @@
 	no     int    
 	m      int    
 	i      int    
+	l      int    
 )
 
 .constants(
 	10.1 float
 	5.2  float
 	2    int  
-	3    int  
+	4    int  
 	10   int  
 	5    int  
+	3    int  
 	0    int  
 	15   int  
 	7    int  
 	8    int  
 	1    int  
 	11   int  
+	12   int  
 )
 
 .named_constants(
@@ -36,19 +39,22 @@
 )
 
 .labels(
-	m1    86    
-	m4    109   
-	m5    111   
-	m3    113   
-	m2    115   
-	m6    119   
-	m7    131   
-	m9    189   
-	m10   193   
-	m8    199   
-	m11   203   
-	m12   215   
-	m13   278   
+	m1    87    
+	m4    110   
+	m5    112   
+	m3    114   
+	m2    116   
+	m6    120   
+	m7    132   
+	m9    190   
+	m10   194   
+	m8    200   
+	m11   204   
+	m12   216   
+	m14   279   
+	m15   291   
+	m16   359   
+	m13   363   
 )
 
 .code(
@@ -63,7 +69,7 @@
 	:=       assign_op
 	a        l-val    
 	a        r-val    
-	3        int      
+	4        int      
 	+        add_op   
 	:=       assign_op
 	b        l-val    
@@ -93,6 +99,7 @@
 	f        l-val    
 	a        r-val    
 	2        int      
+	-        unary_op 
 	3        int      
 	^        pow_op   
 	^        pow_op   
@@ -328,6 +335,90 @@
 	JMP      jump     
 	i        r-val    
 	OUT      out_op   
+	m14      label    
+	JMP      jump     
+	m14      label    
+	:        colon    
+	l        l-val    
+	10       int      
+	:=       assign_op
+	l        r-val    
+	12       int      
+	<        rel_op   
+	m16      label    
+	JF       jf       
+	m15      label    
+	JMP      jump     
+	m15      label    
+	:        colon    
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	l        l-val    
+	l        r-val    
+	1        int      
+	+        add_op   
+	:=       assign_op
+	m16      label    
+	JMP      jump     
+	l        r-val    
+	OUT      out_op   
+	m14      label    
+	JMP      jump     
+	m16      label    
+	:        colon    
 	m11      label    
 	JMP      jump     
 	m13      label    
