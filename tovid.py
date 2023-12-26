@@ -944,28 +944,20 @@ def parse_for():
 
         if znak == '<' or znak == '<=':
             for i in range(start_znach,last_znach):
-                parse_token('{', 'brack_op', '')
                 parse_statementlist()
-                parse_token('}', 'brack_op', '')
-                postfix_code.append(m1)  # Трансляцiя
-                postfix_code.append(('JMP', 'jump'))  # 1
-                set_value_label(m3)  # в табл. мiток
-                postfix_code.append(m3)  # Трансляцiя
-                postfix_code.append((':', 'colon'))  # 3
-
+                print('1----z')
 
         else:
             for i in range(last_znach,start_znach):
-                parse_token('{', 'brack_op', '')
                 parse_statementlist()
-                parse_token('}', 'brack_op', '')
-                postfix_code.append(m1)  # Трансляцiя
-                postfix_code.append(('JMP', 'jump'))  # 1
-                set_value_label(m3)  # в табл. мiток
-                postfix_code.append(m3)  # Трансляцiя
-                postfix_code.append((':', 'colon'))  # 3
+                print('2----z')
 
-
+        parse_token('}', 'brack_op', '')
+        postfix_code.append(m1)  # Трансляцiя
+        postfix_code.append(('JMP', 'jump'))  # 1
+        set_value_label(m3)  # в табл. мiток
+        postfix_code.append(m3)  # Трансляцiя
+        postfix_code.append((':', 'colon'))  # 3
 
 
 def get_current_lexeme(num_row):

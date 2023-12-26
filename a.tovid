@@ -3,7 +3,7 @@ import "math/rand"
 
 func sum() {
 	const float h := 10.1 + 5.2
-	if {
+	if h < 12{
        return 2
 	}
 	return h
