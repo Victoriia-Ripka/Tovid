@@ -172,6 +172,7 @@ class PSM:             # Postfix Stack Machine
                             print(f'-------------- OUT: {id}')
                 elif tok == 'in_op':
                         id, _ = self.stack.get_top_element()
+                        print('INPUT waiting:')
                         user_input = '"' + input() + '"'
                         print(f'-------------- IN: {id}={self.tableOfVar[id][2]} -> {id}={user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
                         self.stack.push((user_input, 'string'))
