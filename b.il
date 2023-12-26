@@ -26,167 +26,89 @@
     .maxstack  8
 	.locals (
        [0]  int32 a,
-       [1]  int32 i,
-       [2]  int32 l,
+       [1]  float32 b,
+       [2]  float32 new,
+       [3]  string s,
+       [4]  int32 c,
+       [5]  string done
+    )
 	ldstr ""
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloca a
-	ldc.i4 3
+	ldc.i4 2
 	stind.i4
+	ldloca b
+	ldc.r4 3.1
+	stind.r4
+	ldloca c
+	ldc.i4 4
+	stind.i4
+	ldloca new
+	ldc.i4 0
+	conv.r4
+	ldc.i4 1
+	conv.r4
+	ldc.i4 4
+	conv.r4
+	conv.i4
+	ldloc c
+	conv.r4
+	call float64 [mscorlib]System.Math::Pow(float64, float64)
+	call float64 [mscorlib]System.Math::Pow(float64, float64)
+	sub
+	ldc.i4 3
+	conv.r4
+	ldc.i4 2
+	conv.r4
+	div
+	add
+	stind.r4
+	ldloca s
+	ldstr "hello"
+	stind.ref
 	ldloc a
 	call void [mscorlib]System.Console::WriteLine(int32)
-	br m1
-m1:
-	ldloca i
-	ldc.i4 0
-	stind.i4
-	ldloc i
-	ldc.i4 11
-	clt
-	brfalse m3
-	br m2
-m2:
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca i
-	ldloc i
-	ldc.i4 1
-	add
-	stind.i4
-	br m3
-	ldloc i
+	ldloc b
+	call void [mscorlib]System.Console::WriteLine(float32)
+	ldloc c
 	call void [mscorlib]System.Console::WriteLine(int32)
-	ldloca a
-	call string [mscorlib]System.Console::ReadLine()
+	ldloc s
+	call void [mscorlib]System.Console::WriteLine(string)
+	ldloc new
+	call void [mscorlib]System.Console::WriteLine(float32)
+	ldloca done
+	ldstr "Done!"
 	stind.ref
-	br m4
-m4:
-	ldloca l
-	ldc.i4 10
-	stind.i4
-	ldloc l
-	ldc.i4 12
-	clt
-	brfalse m6
-	br m5
-m5:
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	br m6
-	ldloc l
-	call void [mscorlib]System.Console::WriteLine(int32)
-	br m4
-m6:
-	br m1
-m3:
+	ldstr "\n"
+	call void [mscorlib]System.Console::WriteLine(string)
+	ldloc done
+	call void [mscorlib]System.Console::WriteLine(string)
 
-ldstr ""call void [mscorlib]System.Console::WriteLine(string)
+ldstr ""call void [mscorlib]System.Console::WriteLine(string)	ldstr "a = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  a
+	call void [mscorlib]System.Console::WriteLine(int32) 
+	ldstr "b = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  b
+	call void [mscorlib]System.Console::WriteLine(float32) 
+	ldstr "new = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  new
+	call void [mscorlib]System.Console::WriteLine(float32) 
+	ldstr "s = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  s
+	call void [mscorlib]System.Console::WriteLine(string) 
+	ldstr "c = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  c
+	call void [mscorlib]System.Console::WriteLine(int32) 
+	ldstr "done = "
+	call void [mscorlib]System.Console::Write(string) 
+	ldloc  done
+	call void [mscorlib]System.Console::WriteLine(string) 
+
 ldstr ""
 call void [mscorlib]System.Console::WriteLine(string)	ret    
 }

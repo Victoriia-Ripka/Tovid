@@ -35,10 +35,9 @@
        [7]  int32 no,
        [8]  int32 m,
        [9]  int32 i,
-       [10]  int32 l,
-       [11]  float32 h,
-       [12]  int32 five,
-       [13]  string done
+       [10]  float32 h,
+       [11]  int32 five,
+       [12]  string done
     )
 	ldstr ""
 	call void [mscorlib]System.Console::WriteLine(string)
@@ -53,7 +52,7 @@
 	stind.i4
 	ldloca a
 	ldloc a
-	ldc.i4 4
+	ldc.i4 3
 	add
 	stind.i4
 	ldloca b
@@ -86,7 +85,6 @@
 	ldloc a
 	conv.r4
 	ldc.i4 2
-	neg
 	ldc.i4 3
 	call float64 [mscorlib]System.Math::Pow(float64, float64)
 	call float64 [mscorlib]System.Math::Pow(float64, float64)
@@ -116,12 +114,6 @@
 	call void [mscorlib]System.Console::WriteLine(string)
 	ldloc done
 	call void [mscorlib]System.Console::WriteLine(string)
-	ldloca yes
-	ldc.i4 0
-	stind.i4
-	ldloca no
-	ldc.i4 0
-	stind.i4
 	ldloc a
 	ldc.i4 15
 	ceq
@@ -300,82 +292,6 @@ m12:
 	br m13
 	ldloc i
 	call void [mscorlib]System.Console::WriteLine(int32)
-	br m14
-m14:
-	ldloca l
-	ldc.i4 10
-	stind.i4
-	ldloc l
-	ldc.i4 12
-	clt
-	brfalse m16
-	br m15
-m15:
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	ldloca l
-	ldloc l
-	ldc.i4 1
-	add
-	stind.i4
-	br m16
-	ldloc l
-	call void [mscorlib]System.Console::WriteLine(int32)
-	br m14
-m16:
 	br m11
 m13:
 
@@ -418,10 +334,6 @@ ldstr ""call void [mscorlib]System.Console::WriteLine(string)	ldstr "a = "
 	ldstr "i = "
 	call void [mscorlib]System.Console::Write(string) 
 	ldloc  i
-	call void [mscorlib]System.Console::WriteLine(int32) 
-	ldstr "l = "
-	call void [mscorlib]System.Console::Write(string) 
-	ldloc  l
 	call void [mscorlib]System.Console::WriteLine(int32) 
 	ldstr "h = "
 	call void [mscorlib]System.Console::Write(string) 

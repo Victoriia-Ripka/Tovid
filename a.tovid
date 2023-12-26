@@ -3,6 +3,9 @@ import "math/rand"
 
 func sum() {
 	const float h := 10.1 + 5.2
+	if {
+       return 2
+	}
 	return h
 }
 // some

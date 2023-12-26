@@ -2,14 +2,15 @@ package main
 import "math/rand"
 
 func main() {
-    var int a := 3
-	print(a)
+	var int a := 2
+	var float b := 3.1
+	var float new
+	const int c := 4
+	new := 0 - (1^4^c) + 3 / 2
 
-	for i := 0; i < 11 ; i := i + 1 {
-        print(i)
-        scanf(a)
-        for l := 10; l < 12 ; l := l + 1 {
-            print(l)
-        }
-    }
+	var string s := "hello"
+
+	print (a, b, c, s, new)
+	const done := "Done!"
+	print("\n" + done)
 }

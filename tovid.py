@@ -944,18 +944,28 @@ def parse_for():
 
         if znak == '<' or znak == '<=':
             for i in range(start_znach,last_znach):
+                parse_token('{', 'brack_op', '')
                 parse_statementlist()
+                parse_token('}', 'brack_op', '')
+                postfix_code.append(m1)  # Трансляцiя
+                postfix_code.append(('JMP', 'jump'))  # 1
+                set_value_label(m3)  # в табл. мiток
+                postfix_code.append(m3)  # Трансляцiя
+                postfix_code.append((':', 'colon'))  # 3
+
 
         else:
             for i in range(last_znach,start_znach):
+                parse_token('{', 'brack_op', '')
                 parse_statementlist()
+                parse_token('}', 'brack_op', '')
+                postfix_code.append(m1)  # Трансляцiя
+                postfix_code.append(('JMP', 'jump'))  # 1
+                set_value_label(m3)  # в табл. мiток
+                postfix_code.append(m3)  # Трансляцiя
+                postfix_code.append((':', 'colon'))  # 3
 
-        parse_token('}', 'brack_op', '')
-        postfix_code.append(m1)  # Трансляцiя
-        postfix_code.append(('JMP', 'jump'))  # 1
-        set_value_label(m3)  # в табл. мiток
-        postfix_code.append(m3)  # Трансляцiя
-        postfix_code.append((':', 'colon'))  # 3
+
 
 
 def get_current_lexeme(num_row):
@@ -1296,6 +1306,8 @@ def convert_to_CIL():
     global code
     label_name = ''
     prev = ''
+    last_string = ''
+    last_lval = ''
     for instr in postfix_code:
         val, tok = instr[0], instr[1]
 
@@ -1305,12 +1317,16 @@ def convert_to_CIL():
             elif val in table_of_named_const.keys():
                 prev = table_of_named_const[val][1]
             code += f'\tldloca {val}\n'
+            last_lval = val
 
         elif tok == 'r-val':
             if val in table_of_var.keys():
                 var_named_const_type = table_of_var[val][1]
             elif val in table_of_named_const.keys():
                 var_named_const_type = table_of_named_const[val][1]
+
+            if var_named_const_type == 'string':
+                last_string = val
 
             if var_named_const_type == 'float' and prev in ('int', 'intnum'):
                 code += '\tconv.r4\n'
@@ -1583,7 +1599,7 @@ def save_CIL(file_name):
     # finishing_text = '\tldstr "Press any key to continue..."\n\tcall void [mscorlib]System.Console::WriteLine(string)\n'
     finishing_text = '\nldstr ""\ncall void [mscorlib]System.Console::WriteLine(string)'
 
-    f.write(header + entrypoint + local_vars_named_consts + code + finishing_text + "\tret    \n}\n}")
+    f.write(header + entrypoint + local_vars_named_consts + code + values_var_named_const + finishing_text + "\tret    \n}\n}")
     f.close()
     print(f"\nIL-код успішно збережено у файлі {fname}")
 

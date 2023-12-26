@@ -174,14 +174,15 @@ class PSM:             # Postfix Stack Machine
                         id, _ = self.stack.get_top_element()
                         print('INPUT waiting:')
                         user_input = '"' + input() + '"'
-                        print(f'-------------- IN: {id}={self.tableOfVar[id][2]} -> {id}={user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
+                        print(
+                            f'-------------- IN: {id}={self.tableOfVar[id][2]} -> {id}={user_input}')  # {id}={self.tableOfVar[id][2]} -> {id}={user_input}')
                         self.stack.push((user_input, 'string'))
                         self.do_it(':=', 'assign_op')
                         self.numInstr += 1
                         # if id in self.tableOfVar.keys():
                         #     self.tableOfVar[lexL] = (self.tableOfVar[lexL][0], tokR, get_value(lexR, tokR))
                         # else:
-                        #     self.tableOfNamedConst[lexL][0], tokR, get_value(lexR, tokR)
+                        #     self.tableOfNamedConst[lexL][0], tokR, get_value(lexR, tokR))
                 else:
                     print(f'-=-=-=========({lex},{tok})  numInstr={self.numInstr}')
                     self.do_it(lex, tok)
